@@ -1,0 +1,10 @@
+include("node.jl")
+include("edge.jl")
+include("graph.jl")
+
+noeud1 = Node("James", "ahooj")
+noeud2 = Node("Kirk", "guitar")
+noeud3 = Node("Lars", "tdd")
+edge1 = Edge(noeud1, noeud2, 5)
+edge2 = Edge(noeud2, noeud3, 4)
+G = Graph("Ick", [noeud1, noeud2, noeud3], [edge1, edge2])
