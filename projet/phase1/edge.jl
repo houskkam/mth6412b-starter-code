@@ -1,7 +1,7 @@
 import Base.show
 
 """Type abstrait dont d'autres types de edges dériveront."""
-abstract type AbstractEdge{T, Y <: AbstractNode} end
+abstract type AbstractEdge{Z, T <: AbstractNode} end
 
 """Type représentant les edges d'un graphe.
 
@@ -13,10 +13,10 @@ Exemple:
         edge2 = Edge(noeud2, noeud3, 4)
 
 """
-mutable struct Edge{T, Y} <: AbstractEdge{T, Y}
-  node1::Y
-  node2::Y
-  poids::T
+mutable struct Edge{Z, T} <: AbstractEdge{Z, T}
+  node1::T
+  node2::T
+  poids::Z
 end
 
 # on présume que tous les edges dérivant d'AbstractEdge
