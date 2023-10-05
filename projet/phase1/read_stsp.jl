@@ -12,6 +12,7 @@ function read_header(filename::String)
   for section in sections
     header[section] = "None"
   end
+  
 
   for line in eachline(file)
     line = strip(line)
@@ -97,7 +98,7 @@ function read_edges(header::Dict{String}{String}, filename::String)
   edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
   known_edge_weight_formats = ["FULL_MATRIX", "UPPER_ROW", "LOWER_ROW",
   "UPPER_DIAG_ROW", "LOWER_DIAG_ROW", "UPPER_COL", "LOWER_COL",
-  "UPPER_DIAG_COL", "LOWER_DIAG_COL"]
+  "UPPER_DIAG_COL", "LOWER_DIAG_COL"] 
 
   if !(edge_weight_format in known_edge_weight_formats)
     @warn "unknown edge weight format" edge_weight_format
@@ -115,6 +116,7 @@ function read_edges(header::Dict{String}{String}, filename::String)
 
   for line in eachline(file)
     line = strip(line)
+    #println(line)
     if !flag
       if occursin(r"^EDGE_WEIGHT_SECTION", line)
         edge_weight_section = true
@@ -129,17 +131,22 @@ function read_edges(header::Dict{String}{String}, filename::String)
           n_on_this_line = min(n_to_read, n_data)
 
           for j = start : start + n_on_this_line - 1
-            n_edges = n_edges + 1
+            n_edges = n_edges + 1 #amount of edges constructed until now
             if edge_weight_format in ["UPPER_ROW", "LOWER_COL"]
-              edge = (k+1, i+k+2)
+              weight= data[j]
+              edge = (k+1, i+k+2,weight)
             elseif edge_weight_format in ["UPPER_DIAG_ROW", "LOWER_DIAG_COL"]
-              edge = (k+1, i+k+1)
+              weight= data[j]
+              edge = (k+1, i+k+1,weight)
             elseif edge_weight_format in ["UPPER_COL", "LOWER_ROW"]
-              edge = (i+k+2, k+1)
+              weight= data[j]
+              edge = (i+k+2, k+1, weight)
             elseif edge_weight_format in ["UPPER_DIAG_COL", "LOWER_DIAG_ROW"]
-              edge = (i+1, k+1)
+              weight= data[j]
+              edge = (i+1, k+1,weight)
             elseif edge_weight_format == "FULL_MATRIX"
-              edge = (k+1, i+1)
+              weight= data[j]
+              edge = (k+1, i+1,weight)
             else
               warn("Unknown format - function read_edges")
             end
