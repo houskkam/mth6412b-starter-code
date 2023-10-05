@@ -136,19 +136,19 @@ function read_edges(header::Dict{String}{String}, filename::String)
             n_edges = n_edges + 1 #amount of edges constructed until now
 
             if edge_weight_format in ["UPPER_ROW", "LOWER_COL"]
-              weight= parse(Int64, data[j+1])
+              weight= parse(Float64, data[j+1])
               edge = (k+1, i+k+2, weight)
             elseif edge_weight_format in ["UPPER_DIAG_ROW", "LOWER_DIAG_COL"]
-              weight= parse(Int64, data[j+1])
+              weight= parse(Float64, data[j+1])
               edge = (k+1, i+k+1,weight)
             elseif edge_weight_format in ["UPPER_COL", "LOWER_ROW"]
-              weight= parse(Int64, data[j+1])
+              weight= parse(Float64, data[j+1])
               edge = (i+k+2, k+1, weight)
             elseif edge_weight_format in ["UPPER_DIAG_COL", "LOWER_DIAG_ROW"]
-              weight= parse(Int64, data[j+1])
+              weight= parse(Float64, data[j+1])
               edge = (i+1, k+1, weight)
             elseif edge_weight_format == "FULL_MATRIX"
-              weight= parse(Int64, data[j+1])
+              weight= parse(Float64, data[j+1])
               edge = (k+1, i+1, weight)
             else
               warn("Unknown format - function read_edges")
