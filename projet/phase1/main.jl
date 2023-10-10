@@ -1,12 +1,14 @@
-include("node.jl")
-include("edge.jl")
-include("graph.jl")
-include("read_stsp.jl")
+import Pkg
+Pkg.add("Plots")
+include("projet\\phase1\\node.jl")
+include("projet\\phase1\\edge.jl")
+include("projet\\phase1\\graph.jl")
+include("projet\\phase1\\read_stsp.jl")
 
 # Make sure you are in the mth6412b-starter-code directory
 # by using `pwd()` and `cd ..` commands before executing next line.
 # You can also change the file you are reading data from.
-fn = pwd() * "\\instances\\stsp\\bayg29.tsp"
+fn = pwd() * "\\instances\\stsp\\bays29.tsp"
 
 header = read_header(fn)
 almost_edges = read_edges(header, fn)
@@ -16,7 +18,7 @@ almost_nodes = read_nodes(header, fn)
 #println(Node(string(almost_nodes[2][1]), almost_nodes[2][2]))
 
 # Constructing my_nodes of type Node from the given file 
-my_nodes = []
+my_nodes = Vector{Node{Float64}}()
 for almost_node in almost_nodes
     #println(typeof(almost_node[2]))
     new_node = Node(string(almost_node[2][1]), almost_node[2][2])
@@ -25,7 +27,7 @@ end
 #print(my_edges[5])
 
 # Constructing my_edges of type Edge from the given file 
-my_edges = []
+my_edges = Vector{Edge{Float64, Node{Float64}}}()
 for almost_edge in almost_edges
     new_edge = Edge(my_nodes[almost_edge[1]], my_nodes[almost_edge[2]], almost_edge[3])
     #println(poids(new_edge))
