@@ -33,3 +33,14 @@ edge2 = Edge(noeud1, noeud2, 5)
 # Testing graph.jl
 G = Graph("Ick", [noeud1, noeud2, noeud4], [edge1, edge2])
 
+@test name(G) == "Ick"
+@test nodes(G) == [noeud1, noeud2, noeud4]
+@test edges(G) == [edge1, edge2]
+
+edge_oriented_1 = EdgeOriented(noeud1, noeud2, 5)
+edge_oriented_2 = EdgeOriented(noeud2, noeud4, 4)
+    
+C = ComposanteConnexe(noeud1, [noeud1, noeud2, noeud4], [edge_oriented_1, edge_oriented_2])
+
+@test nodes(C) == [noeud1, noeud2, noeud4]
+@test edges(C) == [edge_oriented_1, edge_oriented_2]
