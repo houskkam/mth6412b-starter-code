@@ -38,7 +38,7 @@ end
 # posséderont des champs `name` et `nodes`.
 
 """Renvoie le nom du graphe."""
-name(graph::AbstractGraph) = graph.name
+name(graph::Graph) = graph.name
 
 """Renvoie la liste des noeuds du graphe."""
 nodes(graph::AbstractGraph) = graph.nodes

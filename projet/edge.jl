@@ -23,15 +23,15 @@ end
 # posséderont des champs `edge1`, `edge2` et `poids`.
 
 """Renvoie le nom du premiere noeud d'un edge."""
-node1(edge::AbstractEdge) = edge.node1
+node1(edge::Edge) = edge.node1
 
 """Renvoie le nom du deuxieme noeud d'un edge."""
-node2(edge::AbstractEdge) = edge.node2
+node2(edge::Edge) = edge.node2
 
 """Renvoie le poids d'un edge."""
 poids(edge::AbstractEdge) = edge.poids
 
 """Affiche un edge."""
-function show(edge::AbstractEdge)
+function show(edge::Edge)
   println("First node ", node1(edge), "second node: ", node2(edge) ,", poids: ", poids(edge))
 end
