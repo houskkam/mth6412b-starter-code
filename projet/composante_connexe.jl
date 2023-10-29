@@ -1,4 +1,5 @@
 import Base.show
+import Base.==
 
 """Type abstrait dont d'autres types de graphes dériveront."""
 abstract type AbstractComposanteConnexe{T, Z} <: AbstractGraph{T, Z} end
@@ -9,9 +10,9 @@ Exemple :
     noeud1 = Node("James", "ahooj")
     noeud2 = Node("Kirk", "guitar")
     noeud3 = Node("Lars", "tdd")
-    edge1 = EdgeOriented(noeud1, noeud2, 5)
-    edge2 = EdgeOriented(noeud2, noeud3, 4)
-    G = Graph("Ick", [noeud1, noeud2, noeud3], [edge1, edge2])
+    edge_oriented_1 = EdgeOriented(noeud1, noeud2, 5)
+    edge_oriented_2 = EdgeOriented(noeud2, noeud3, 4)
+    C = ComposanteConnexe(noeud1, [noeud1, noeud2, noeud3], [edge_oriented_1, edge_oriented_2])
 
 Attention, tous les noeuds doivent avoir des données de même type.
 """
@@ -21,16 +22,25 @@ mutable struct ComposanteConnexe{T, Z} <: AbstractComposanteConnexe{T, Z}
   edges::Vector{EdgeOriented{Z,T}}
 end
 
-"""Ajoute un noeud au graphe."""
-function add_node!(graph::ComposanteConnexe{T, Z}, node::Node{T}) where {T, Z}
-  push!(graph.nodes, node)
-  graph
+"""Ajoute un noeud et l'arret qui le relie au graphe."""
+function add_node_and_edge!(composante::ComposanteConnexe{T, Z}, node::Node{T}, edge::Edge{T, Z}) where {T, Z}
+  push!(composante.nodes, node)
+  composante
 end
 
-"""Ajoute un edge au graphe."""
-function add_edge!(graph::ComposanteConnexe{T, Z}, edge::Edge{T, Z}) where {T, Z} 
-  push!(graph.edges, edge)
-  graph
+==(c1::ComposanteConnexe, c2::ComposanteConnexe) = (nodes(c1) == nodes(c2)) && (edges(c1) == edges(c2))
+
+function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::Edge{T, Z}) where {T, Z}
+  new_component = composantes[1]
+  #for i = 2...length(composantes)
+    #for node in composantes[i]
+      
+    #end
+    #for edge in composantes[i].edges
+     # push!()
+    #end
+  #end
+  new_component
 end
 
 """Affiche un graphe"""

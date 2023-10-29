@@ -44,3 +44,13 @@ C = ComposanteConnexe(noeud1, [noeud1, noeud2, noeud4], [edge_oriented_1, edge_o
 
 @test nodes(C) == [noeud1, noeud2, noeud4]
 @test edges(C) == [edge_oriented_1, edge_oriented_2]
+
+@test isless(edge_oriented_1, edge_oriented_2) == false
+@test <(edge_oriented_1, edge_oriented_2) == false
+@test >(edge_oriented_1, edge_oriented_2) == true
+
+v = [edge_oriented_1, edge_oriented_2, edge_oriented_2]
+sort!(v)
+
+@test sort([edge_oriented_1, edge_oriented_2]) == [edge_oriented_2, edge_oriented_1]
+@test convert(EdgeOriented, edge1) == EdgeOriented{Int64, Node{String}}(Node{String}("James", "ahooj"), Node{String}("Kirk", "guitar"), 5)

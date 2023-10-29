@@ -1,4 +1,4 @@
-import Base.show
+import Base: show, <, isless, ==, isequal
 
 """Type abstrait dont d'autres types de edges dériveront."""
 abstract type AbstractEdge{Z, T <: AbstractNode} end
@@ -30,6 +30,9 @@ node2(edge::Edge) = edge.node2
 
 """Renvoie le poids d'un edge."""
 poids(edge::AbstractEdge) = edge.poids
+
+Base.isless(x::AbstractEdge, y::AbstractEdge) = poids(x) < poids(y)
+
 
 """Affiche un edge."""
 function show(edge::Edge)

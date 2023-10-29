@@ -1,4 +1,6 @@
-import Base.show
+import Base.show, Base.convert, Base.==
+
+include("edge.jl")
 
 """Type abstrait dont d'autres types de edges orientés dériveront."""
 abstract type AbstractEdgeOriented{Z, T <: AbstractNode} <: AbstractEdge{Z, T}  end
@@ -27,6 +29,10 @@ debut(edge::AbstractEdgeOriented) = edge.debut
 
 """Renvoie le nom du deuxieme noeud d'un edge."""
 fin(edge::AbstractEdgeOriented) = edge.fin
+
+==(e1::AbstractEdgeOriented, e2::AbstractEdgeOriented) = (debut(e1) == debut(e2)) && (fin(e1) == fin(e2)) && (poids(e1) == poids(e2))
+
+Base.convert(::Type{T}, e::Edge) where {T<:EdgeOriented} = EdgeOriented(node1(e), node2(e), poids(e))
 
 """Affiche un edge."""
 function show(edge::AbstractEdgeOriented)
