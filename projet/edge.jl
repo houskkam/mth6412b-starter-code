@@ -10,7 +10,7 @@ Exemple:
         noeud2 = Node("Kirk", "guitar")
         noeud3 = Node("Lars", "tdd")
         edge1 = Edge(noeud1, noeud2, 5)
-        edge2 = Edge(noeud2, noeud3, 4)
+        edge2 = Edge(noeud2, noeud3, 4).
 
 """
 mutable struct Edge{Z, T} <: AbstractEdge{Z, T}
@@ -31,6 +31,7 @@ node2(edge::Edge) = edge.node2
 """Renvoie le poids d'un edge."""
 poids(edge::AbstractEdge) = edge.poids
 
+"""Determines that being bigger than for type AbstractEdge depends on weight."""
 Base.isless(x::AbstractEdge, y::AbstractEdge) = poids(x) < poids(y)
 
 

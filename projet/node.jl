@@ -26,6 +26,7 @@ name(node::AbstractNode) = node.name
 """Renvoie les données contenues dans le noeud."""
 data(node::AbstractNode) = node.data
 
+"""Determines that nodes are equal if their contents equal."""
 ==(n1::AbstractNode, n2::AbstractNode) = (name(n1) == name(n2)) && (data(n1) == data(n2))
 
 """Affiche un noeud."""
