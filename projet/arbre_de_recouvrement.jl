@@ -1,6 +1,6 @@
 include("graph.jl")
 
-function kruskal(graph::Graph{T, Z})
+function kruskal(graph::Graph{T, Z}) where {T, Z}
     sorted_edges = sort(graph.edges)
     connected_components = Vector{ComposanteConnexe{T, Z}}()
     num_added_edges = 0
@@ -20,12 +20,26 @@ function kruskal(graph::Graph{T, Z})
             end
         end
         if should_add
+            edge = convert(EdgeOriented, edge)
+            # create new one and add it to the list of existing components
             if length(add_edge_to) == 0
-                # create new one
+                new_component = ComposanteConnexe(node1(edge), [node1(edge), node2(edge)], [edge])
+                push!(connected_components, new_component)
+            # add the edge and the node that connects it to the connected component
             elseif length(add_edge_to) == 1
-                # add it
-            else 
-                #I have to connect some components into one
+                if node1(edge) in nodes(add_edge_to[1])
+                    add_node_and_edge!(add_edge_to[1], node2(edge), edge)
+                else
+                    add_node_and_edge!(add_edge_to[1], node1(edge), edge)
+                end
+            # I have to connect all components and the new edge from add_edge_to into one,
+            # delete the old unconnected components               
+            else
+                push!(connected_components, connect_into_one(add_edge_to, edge))
+                for component in add_edge_to
+                    component_idx = findfirst(==(component), connected_components)
+                    deleteat!(connected_components, component_idx)
+                end
             end
             num_added_edges = num_added_edges + 1
         end
@@ -33,6 +47,10 @@ function kruskal(graph::Graph{T, Z})
             break
         end
     end
+    if length(connected_components) > 1
+        println("error, too many connected components left")
+    end
+    connected_components[1]
 end
 
 
