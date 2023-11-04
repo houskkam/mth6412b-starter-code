@@ -63,3 +63,14 @@ function show(graph::Graph)
     show(edge)
   end
 end
+
+"Get all the edges for a certain node"
+function get_edges_for_node(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
+  corresponding_edges = Vector{Edge{Z, T}}()
+  for edge in edges(graph)
+      if edge.node1 == node || edge.node2 == node
+          push!(corresponding_edges, edge)
+      end
+  end
+  return corresponding_edges
+end
