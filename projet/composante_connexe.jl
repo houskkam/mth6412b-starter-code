@@ -1,5 +1,6 @@
 import Base.show
 import Base.==
+include("graph.jl")
 
 """Type abstrait dont d'autres types de graphes dériveront."""
 abstract type AbstractComposanteConnexe{T, Z} <: AbstractGraph{T, Z} end
@@ -23,25 +24,30 @@ mutable struct ComposanteConnexe{T, Z} <: AbstractComposanteConnexe{T, Z}
 end
 
 """Ajoute un noeud et l'arret qui le relie au graphe."""
-function add_node_and_edge!(composante::ComposanteConnexe{T, Z}, node::Node{T}, edge::Edge{T, Z}) where {T, Z}
+function add_node_and_edge!(composante::ComposanteConnexe{Node{T}, Z}, node::Node{T}, edge::EdgeOriented{Z, Node{T}}) where {T, Z}
   push!(composante.nodes, node)
+  push!(composante.edges, edge)
   composante
 end
+
 
 """Determines that connected components are equal if their contents equal."""
 ==(c1::ComposanteConnexe, c2::ComposanteConnexe) = (nodes(c1) == nodes(c2)) && (edges(c1) == edges(c2))
 
 """Takes a vector of connected components and merges them into one."""
-function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::Edge{T, Z}) where {T, Z}
+function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
   new_component = composantes[1]
-  #for i = 2...length(composantes)
-    #for node in composantes[i]
-      
-    #end
-    #for edge in composantes[i].edges
-     # push!()
-    #end
-  #end
+  for node in nodes(composantes[2])
+    if !(node in nodes(new_component))
+      add_node!(new_component, node)
+    end
+  end
+  for edge in edges(composantes[2])
+    add_edge!(new_component, edge)
+  end
+  if(length(composantes) > 2)
+    print("have to connect more than 2 components")
+  end
   new_component
 end
 
