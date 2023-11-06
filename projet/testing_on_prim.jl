@@ -47,6 +47,7 @@ prim_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, prim_e
 expected_connected_component_prim = ComposanteConnexe(noeud1, lab_nodes, prim_expected_edges)
 
 result= prim_alg(G,noeud1)
+println(result)
 
 
 #print("\n")
@@ -54,4 +55,4 @@ result= prim_alg(G,noeud1)
 
 #Testing prim 
 #@test prim_alg(G,noeud1) == expected_connected_component_prim
-println(result)
+#println(result)

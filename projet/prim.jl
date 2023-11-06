@@ -3,8 +3,9 @@ using DataStructures
 include("graph.jl")
 include("composante_connexe.jl")
 
-mutable struct NodeKey{T}
+mutable struct NodeKey{T,Z}
     node::Node{T}
+    edge::EdgeOriented{T,Z}
     it::Int
   end
 
@@ -30,15 +31,17 @@ function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
 
     #une file de priorité contient tous les noeuds qui n’ont pas encore été ajoutés à l’arbre et min_weight donne la priorité
     #chaque fois qu’un noeud est connecté à l’arbre, les attributs min_weight et parent de ceux qui n’ont pas encore été connectés doivent être mis à jour.
-    pq = PriorityQueue{NodeKey{T},Int}()
+    pq = PriorityQueue{NodeKey{T,Z},Int}()
     it=0
-    enqueue!(pq,NodeKey{T}(startpoint,it),min_weights[startpoint])
+    enqueue!(pq,NodeKey{T,Z}(startpoint,EdgeOriented{Z, Node{T}}(startpoint, Node{T}, 0.0),it),min_weights[startpoint])
 
     while !isempty(pq)
         it+=1
         # Le premier nœud dans la paire est le nœud ayant le poids minimal
-        w = dequeue!(pq).node
-        println(w)
+        node_key = dequeue!(pq)
+        w, h = node_key.node, node_key.edge
+        #w = dequeue!(pq).node
+        #println(w)
 
         # Si le nœud est déjà inclus dans l'arbre, passez au suivant
         if  w in inTree
@@ -47,13 +50,15 @@ function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
         
 
         push!(inTree,w) # Marquez le nœud comme inclus dans l'arbre
+        add_node_and_edge!(minimum_spanning_tree, w, h)
+
 
         # Iterate through all adjacent nodes of w
         for edge in get_oriented_edges(graph, w)
-            println(min_weights)
+            #println(min_weights)
             u= ifelse(debut(edge) == w, fin(edge), debut(edge))  # Trouver l'autre nœud connecté par l'arête
             weight= poids(edge)
-            println(u,weight)
+            #println(u,weight)
 
 
             # If v is not in min. spanning tree and the weight of (u, v) is smaller than the current key of v
@@ -61,10 +66,10 @@ function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
                 min_weights[u] = weight
                 parents[u] = w
 
-                enqueue!(pq, NodeKey(u,it), min_weights[u])
+                enqueue!(pq, NodeKey(u,edge,it), min_weights[u])
 
                 #add edge to minimum spanning tree
-                add_node_and_edge!(minimum_spanning_tree, u, edge)
+                #add_node_and_edge!(minimum_spanning_tree, u, edge)
             end
         end
     end
