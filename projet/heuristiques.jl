@@ -13,18 +13,21 @@ mutable struct DisjointSet{T}
     rank::Int
 end
 
+"
 #all the nodes will have to be collected in another way than composante connexe. So a new type is introduced.
 mutable struct TreeNode{T}
     node::T
     children::Vector{TreeNode{T}}
 end
+"
 
 # Create a disjoint-set for each node in the graph.
 function create_disjoint_sets_with_trees(graph::Graph{T, Z}) where {T, Z}
     #disjoint_sets = [DisjointSet(node, 0) for node in graph.nodes]
     disjoint_sets= [DisjointSet(node, 0) for node in graph.nodes]
-    tree_nodes = [TreeNode(node, []) for node in graph.nodes]
-    return disjoint_sets, tree_nodes
+    #tree_nodes = [TreeNode(node, []) for node in graph.nodes]
+    #return disjoint_sets, tree_nodes
+    return disjoint_sets
 end
 
 
@@ -45,7 +48,8 @@ end
 #Union-by-Rank method
 function heuristique_union(graph::Graph{T, Z}) where {T, Z}
     all_edges = edges(graph)  # get all edges
-    disjoint_sets, tree_nodes = create_disjoint_sets_with_trees(graph)
+    #disjoint_sets, tree_nodes = create_disjoint_sets_with_trees(graph)
+    disjoint_sets= create_disjoint_sets_with_trees(graph)
 
     for edge in all_edges
         node1 = edge.node1
@@ -70,7 +74,7 @@ function heuristique_union(graph::Graph{T, Z}) where {T, Z}
         end
     end
     for edge in tree_edges
-        println("Edge from node ", edge.node1, " to node ", edge.node2)
+            println("Edge from node ", edge.node1, " to node ", edge.node2)
     end
 end
 
