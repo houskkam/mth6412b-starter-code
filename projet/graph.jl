@@ -23,7 +23,7 @@ mutable struct Graph{T, Z} <: AbstractGraph{T, Z}
 end
 
 """Ajoute un noeud au graphe."""
-function add_node!(graph::AbstractGraph{T, Z}, node::Node{T}) where {T, Z}
+function add_node!(graph::AbstractGraph{Node{T}, Z}, node::Node{T}) where {T, Z}
   push!(graph.nodes, node)
   graph
 end
