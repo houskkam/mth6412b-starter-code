@@ -79,8 +79,8 @@ function get_oriented_edges(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
   corresponding_edges = Vector{EdgeOriented{Z, T}}()
   for edge in edges(graph)
     edge_new=convert(EdgeOriented,edge)
-    if edge.debut == node || edge.fin == node
-      push!(corresponding_edges, edge)
+    if edge_new.debut == node || edge_new.fin == node
+      push!(corresponding_edges, edge_new)
     end
   end
   return corresponding_edges
