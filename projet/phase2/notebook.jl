@@ -40,12 +40,12 @@ end
 #because composante connexe can lead to long chains and thus is time inefficient, another strategy can be used to form a chain.
 begin
     #Include the other files we use  
-    include("graph.jl")
+    include("../graph.jl")
     
     #This new strategy starts from disjoints sets. Because this is not yet implemented, a new type is created. 
     #This is DisjointSet which gives a parent and rank for a certain node. 
     mutable struct DisjointSet{T}
-        parent::T
+        parent::T 
         rank::Int
     end
     

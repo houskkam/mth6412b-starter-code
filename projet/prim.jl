@@ -2,7 +2,6 @@
 include("graph.jl")
 include("composante_connexe.jl")
 
-
 "
 Elke knoop heeft een attribuut min_weight dat het gewicht van de minimale gewichtsrand voorstelt die deze knoop verbindt met de deelboom.
  Aanvankelijk is min_weight ingesteld op oneindig (d.w.z. +1).
@@ -17,9 +16,9 @@ Telkens wanneer een knoop aan de boom wordt verbonden, moeten de attributen min_
 
 
 
-function prim_alg(graph::Graph{T, Z}, startpoint::Node{T}) where {T, Z}
+function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
     nodes_gr = nodes(graph)
-    minimum_spanning_tree = ComposanteConnexe{T, Z}(startpoint, [startpoint], Vector{Edge{T, Z}}())
+    minimum_spanning_tree = ComposanteConnexe{Node{T}, Z}(startpoint, [startpoint], Vector{EdgeOriented{T, Z}}())
 
     # un attribut min_weight -> Initialement, min_weight = -1 ; Initialement, le parent de chaque noeud est nothing
     for node in nodes_gr
@@ -52,7 +51,7 @@ function prim_alg(graph::Graph{T, Z}, startpoint::Node{T}) where {T, Z}
 
         # Iterate through all adjacent nodes of w
         for edge in get_edges_for_node(graph, w)
-            u= ifelse(node1(edge) == w, node2(edge), node1(edge))  # Trouver l'autre nœud connecté par l'arête
+            u= ifelse(debut(edge) == w, fin(edge), debut(edge))  # Trouver l'autre nœud connecté par l'arête
             weight= poids(edge)
 
             # If v is not in min. spanning tree and the weight of (u, v) is smaller than the current key of v

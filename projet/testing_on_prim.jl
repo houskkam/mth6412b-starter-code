@@ -39,14 +39,15 @@ lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noe
 lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
 G = Graph("Lab", lab_nodes, lab_edges)
 
-# Initializing expected kruskal connected component
-kruskal_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
-kruskal_expected_edges = convert(Array{EdgeOriented{Inf64, Node{String}}}, kruskal_expected_edges)
-expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
 
-# Testing kruskal connected component
-print(kruskal(G))
+#Initializing expected prim connected components 
+prim_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
+prim_expected_edges = convert(Array{EdgeOriented{Int64, Node{String}}}, prim_expected_edges)
+expected_connected_component_prim = ComposanteConnexe(noeud1, lab_nodes, prim_expected_edges)
+
+print(prim_alg(G,noeud1))
 print("\n")
-print(expected_connected_component_kruskal)
-#@test kruskal(G) == expected_connected_component_kruskal
+print(expected_connected_component_prim)
 
+#Testing prim 
+@test prim_alg(G,noeud1) == expected_connected_component_prim

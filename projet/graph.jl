@@ -74,3 +74,15 @@ function get_edges_for_node(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
   end
   return corresponding_edges
 end
+
+"testing_on_example_from_course.jl
+function get_oriented_edges_for_node(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
+  corresponding_edges = Vector{EdgeOriented{Z, T}}()
+  for edge in edges(graph)
+      if edge.debut == node || edge.fin == node
+          push!(corresponding_edges, edge)
+      end
+  end
+  return corresponding_edges
+end
+"

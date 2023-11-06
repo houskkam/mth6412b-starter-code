@@ -13,14 +13,18 @@ mutable struct DisjointSet{T}
     rank::Int
 end
 
+#all the nodes will have to be collected in another way than composante connexe. So a new type is introduced.
+mutable struct TreeNode{T}
+    node::T
+    children::Vector{TreeNode{T}}
+end
+
 # Create a disjoint-set for each node in the graph.
-function create_disjoint_sets(graph::Graph{T, Z}) where {T, Z}
+function create_disjoint_sets_with_trees(graph::Graph{T, Z}) where {T, Z}
     #disjoint_sets = [DisjointSet(node, 0) for node in graph.nodes]
-    disjoint_sets= Vector{DisjointSet{T}}()
-    for node in graph.nodes
-        push!(disjoint_sets,DisjointSet(node, 0))
-    end
-    return disjoint_sets
+    disjoint_sets= [DisjointSet(node, 0) for node in graph.nodes]
+    tree_nodes = [TreeNode(node, []) for node in graph.nodes]
+    return disjoint_sets, tree_nodes
 end
 
 
@@ -33,7 +37,7 @@ end
 
 function find_roots_compression(disjoint_sets::Vector{DisjointSet{T}}, node::T) where T
     if disjoint_sets[node].parent != node
-        disjoint_sets[node].parent = find(disjoint_sets, disjoint_sets[node].parent)
+        disjoint_sets[node].parent = find_roots(disjoint_sets, disjoint_sets[node].parent)
     end
     return disjoint_sets[node].parent
 end
@@ -41,14 +45,13 @@ end
 #Union-by-Rank method
 function heuristique_union(graph::Graph{T, Z}) where {T, Z}
     all_edges = edges(graph)  # get all edges
-    disjoints = create_disjoint_sets(graph)  # Make a disjoint-set for each node in the graph
-    tree_edges = Vector{Edge{T, Z}}()
+    disjoint_sets, tree_nodes = create_disjoint_sets_with_trees(graph)
 
     for edge in all_edges
         node1 = edge.node1
         node2 = edge.node2
-        root_1 = find_roots(disjoints, node1)
-        root_2 = find_roots(disjoints, node2)
+        root_1 = find_roots(disjoint_sets, node1)
+        root_2 = find_roots(disjoint_sets, node2)
 
         if root_1!=root_2 #if they both have the same parent they can't be connected because you would have a cycle
             if disjoints[root_1].rank < disjoints[root_2].rank
@@ -71,8 +74,35 @@ function heuristique_union(graph::Graph{T, Z}) where {T, Z}
     end
 end
 
-#Using path compression 
+
+# Using path compression
 function heuristique_compression(graph::Graph{T, Z}) where {T, Z}
+    all_edges = edges(graph)  # get all edges
+    disjoint_sets, tree_nodes = create_disjoint_sets_with_trees(graph)
 
+    for edge in all_edges
+        node1 = edge.node1
+        node2 = edge.node2
+        root_1 = find_roots_compression(disjoints, node1)
+        root_2 = find_roots_compression(disjoints, node2)
 
+        if root_1 != root_2
+            if disjoints[root_1].rank < disjoints[root_2].rank
+                disjoints[root_1].parent = root_2
+                disjoints[root_2].rank += 1
+            elseif disjoints[root_1].rank > disjoints[root_2].rank
+                disjoints[root_2].parent = root_1
+                disjoints[root_1].rank += 1
+            else
+                disjoints[root_2].parent = root_1
+                disjoints[root_1].rank += 1
+            end
+            push!(tree_edges, edge)
+        end
+    end
+
+    for edge in tree_edges
+        println("Edge from node ", edge.node1, " to node ", edge.node2)
+    end
 end
+
