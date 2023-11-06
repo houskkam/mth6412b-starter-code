@@ -48,6 +48,7 @@ function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::Ed
   if(length(composantes) > 2)
     print("have to connect more than 2 components")
   end
+  add_edge!(new_component, edge)
   new_component
 end
 
