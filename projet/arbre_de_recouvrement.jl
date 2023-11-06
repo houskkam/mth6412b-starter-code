@@ -22,8 +22,8 @@ function kruskal(graph::Graph{T, Z}) where {T, Z}
         end
         if should_add
             edge = convert(EdgeOriented{Z,T}, edge)
-            print("#\n")
-            print(edge, length(add_edge_to))
+            #print("#\n")
+            #print(edge, length(add_edge_to))
             # create new one and add it to the list of existing components
             if length(add_edge_to) == 0
                 new_component = ComposanteConnexe(debut(edge), [debut(edge), fin(edge)], [edge])
@@ -43,7 +43,6 @@ function kruskal(graph::Graph{T, Z}) where {T, Z}
                     component_idx = findfirst(==(component), connected_components)
                     deleteat!(connected_components, component_idx)
                 end
-                add_edge!(connected_components, edge)
             end
             num_added_edges = num_added_edges + 1
         end

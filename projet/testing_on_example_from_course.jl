@@ -47,4 +47,4 @@ expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, krus
 print(kruskal(G))
 print("\n")
 print(expected_connected_component_kruskal)
-#@test kruskal(G) == expected_connected_component_kruskal
+@test kruskal(G) == expected_connected_component_kruskal
