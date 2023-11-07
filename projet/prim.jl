@@ -1,11 +1,13 @@
 
 using DataStructures
+include("edge_oriented.jl")
+include("edge.jl")
 include("graph.jl")
 include("composante_connexe.jl")
 
 mutable struct NodeKey{T,Z}
     node::Node{T}
-    edge::EdgeOriented{T,Z}
+    edge::EdgeOriented{Z,Node{T}}
     it::Int
   end
 
@@ -33,7 +35,8 @@ function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
     #chaque fois qu’un noeud est connecté à l’arbre, les attributs min_weight et parent de ceux qui n’ont pas encore été connectés doivent être mis à jour.
     pq = PriorityQueue{NodeKey{T,Z},Int}()
     it=0
-    enqueue!(pq,NodeKey{T,Z}(startpoint,EdgeOriented{Z, Node{T}}(startpoint, Node{T}, 0.0),it),min_weights[startpoint])
+    edge_nodekey=EdgeOriented(startpoint, startpoint, 0.0)
+    enqueue!(pq,NodeKey(startpoint,edge_nodekey,it),min_weights[startpoint])
 
     while !isempty(pq)
         it+=1
@@ -73,7 +76,12 @@ function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
             end
         end
     end
+    component_idx = findfirst(==(startpoint), nodes(minimum_spanning_tree))
+    deleteat!(nodes(minimum_spanning_tree), component_idx)
 
+    component_idx = findfirst(==(edge_nodekey), edges(minimum_spanning_tree))
+    deleteat!(edges(minimum_spanning_tree), component_idx)
+    
     return minimum_spanning_tree
 
 end

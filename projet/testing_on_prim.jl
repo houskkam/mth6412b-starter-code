@@ -49,7 +49,7 @@ expected_connected_component_prim = ComposanteConnexe(noeud1, lab_nodes, prim_ex
 result= prim_alg(G,noeud1)
 println(result)
 
-
+#testing_components_equal(result, expected_connected_component_prim)
 #print("\n")
 #print(expected_connected_component_prim)
 
