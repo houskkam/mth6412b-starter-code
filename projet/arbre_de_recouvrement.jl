@@ -1,6 +1,9 @@
 include("graph.jl")
 include("composante_connexe.jl")
 
+""" This function gets as an argument an instance of Graph and returns 
+    its spanning tree of type ComposanteConnexe while using Kruskal's algorithm
+"""
 function kruskal(graph::Graph{T, Z}) where {T, Z}
     sorted_edges = sort(graph.edges)
     connected_components = Vector{ComposanteConnexe{T, Z}}()

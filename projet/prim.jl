@@ -10,7 +10,12 @@ mutable struct NodeKey{T,Z}
     edge::EdgeOriented{Z,Node{T}}
     it::Int
   end
-
+  
+""" This function gets as an argument an instance of Graph 
+  and a startpoint of type Node.
+  It returns the graph's spanning tree of type ComposanteConnexe 
+  while using Prim's algorithm beginning at the node startpoint
+"""
 function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
     nodes_gr = nodes(graph)
     minimum_spanning_tree = ComposanteConnexe{Node{T}, Z}(startpoint, [startpoint], [])
