@@ -129,10 +129,149 @@ end
 
 # ╔═╡ 6664eaff-46ae-4f26-a297-3eb2f2a74294
 # Second exercice of Phase 2
+# Firstly, here is my code for the Kruskal algorithm:
 begin
-
-
+    function kruskal(graph::Graph{T, Z}) where {T, Z}
+        sorted_edges = sort(graph.edges)
+        connected_components = Vector{ComposanteConnexe{T, Z}}()
+        num_added_edges = 0
+        should_add = true
+        for edge in sorted_edges
+            should_add = true
+            add_edge_to = Vector{ComposanteConnexe{T, Z}}()
+            for component in connected_components
+                # if both nodes already exist in the came cnnected component, 
+                # there is already a way between them, so we will not add this edge
+                if (node1(edge) in nodes(component)) && (node2(edge) in nodes(component))
+                    should_add = false
+                    break
+                # if one of the nodes is already in one of the composed components, we note the component        
+                elseif (node1(edge) in nodes(component)) || (node2(edge) in nodes(component))
+                    push!(add_edge_to, component)
+                end
+            end
+            if should_add
+                edge = convert(EdgeOriented{Z,T}, edge)
+                #print("#\n")
+                #print(edge, length(add_edge_to))
+                # create new one and add it to the list of existing components
+                if length(add_edge_to) == 0
+                    new_component = ComposanteConnexe(debut(edge), [debut(edge), fin(edge)], [edge])
+                    push!(connected_components, new_component)
+                # add the edge and the node that connects it to the connected component
+                elseif length(add_edge_to) == 1
+                    if debut(edge) in nodes(add_edge_to[1])
+                        add_node_and_edge!(add_edge_to[1], fin(edge), edge)
+                    else
+                        add_node_and_edge!(add_edge_to[1], debut(edge), edge)
+                    end
+                # I have to connect all components and the new edge from add_edge_to into one,
+                # delete the old unconnected components               
+                else
+                    push!(connected_components, connect_into_one(add_edge_to, edge))
+                    for component in add_edge_to
+                        component_idx = findfirst(==(component), connected_components)
+                        deleteat!(connected_components, component_idx)
+                    end
+                end
+                num_added_edges = num_added_edges + 1
+            end
+            if num_added_edges >= length(graph.nodes)
+                break
+            end
+        end
+        if length(connected_components) > 1
+            println("error, too many connected components left")
+        end
+        connected_components[1]
+    end
 end
+
+# It also use a function that I added to the ComposanteConnexe
+begin
+    """Takes a vector of connected components and merges them into one."""
+    function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
+    new_component = composantes[1]
+    for node in nodes(composantes[2])
+        if !(node in nodes(new_component))
+        add_node!(new_component, node)
+        end
+    end
+    for edge in edges(composantes[2])
+        add_edge!(new_component, edge)
+    end
+    if(length(composantes) > 2)
+        print("have to connect more than 2 components")
+    end
+    add_edge!(new_component, edge)
+    new_component
+    end
+end
+
+# Now I will be testing whether it gives the correct result for the graph that
+# we saw on lab slides
+begin
+    using Test
+    # Initializing nodes from example from laboratories
+    noeud1 = Node("a", "a")
+    noeud2 = Node("b", "b")
+    noeud3 = Node("c", "c")
+    noeud4 = Node("d", "d")
+    noeud5 = Node("e", "e")
+    noeud6 = Node("f", "f")
+    noeud7 = Node("g", "g")
+    noeud8 = Node("h", "h")
+    noeud9 = Node("i", "i")
+
+    # Initializing edges from example from laboratories
+    edge1 = Edge(noeud1, noeud2, 4.0)
+    edge2 = Edge(noeud1, noeud8, 8.0)
+    edge3 = Edge(noeud2, noeud8, 11.0)
+    edge4 = Edge(noeud2, noeud3, 8.0)
+    edge5 = Edge(noeud8, noeud9, 7.0)
+    edge6 = Edge(noeud8, noeud7, 1.0)
+    edge7 = Edge(noeud7, noeud9, 6.0)
+    edge8 = Edge(noeud9, noeud3, 2.0)
+    edge9 = Edge(noeud7, noeud6, 2.0)
+    edge10 = Edge(noeud3, noeud4, 7.0)
+    edge11 = Edge(noeud3, noeud6, 4.0)
+    edge12 = Edge(noeud4, noeud6, 14.0)
+    edge13 = Edge(noeud4, noeud5, 9.0)
+    edge14 = Edge(noeud6, noeud5, 10.0)
+
+    # Initializing graph from example from laboratories
+    lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noeud9]
+    lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
+    G = Graph("Lab", lab_nodes, lab_edges)
+
+    # Initializing expected kruskal connected component
+    kruskal_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
+    kruskal_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, kruskal_expected_edges)
+    expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
+
+    # Testing kruskal connected component
+    kruskal_component = kruskal(G)
+    print(kruskal_component)
+    print("\n")
+    print(expected_connected_component_kruskal)
+
+    testing_components_equal(kruskal_component, expected_connected_component_kruskal)
+end
+
+# The testing_components_equal function is implemented in ComposanteConnexe like this
+begin
+    """Used to make sure two connected components contain the same nodes and edges."""
+    function testing_components_equal(c1::ComposanteConnexe, c2::ComposanteConnexe)
+    @test length(nodes(c1)) == length(nodes(c1))
+    @test length(edges(c2)) == length(edges(c2))
+
+    for each in nodes(c1)
+        @test each in nodes(c2)
+    end
+    for each in edges(c1)
+        @test each in edges(c2)
+    end
+    end
 end
 
 # ╔═╡ b91cfa11-627a-44d6-a18c-ae8a4220608e
