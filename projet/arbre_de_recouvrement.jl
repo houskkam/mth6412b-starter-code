@@ -30,7 +30,7 @@ function kruskal(graph::Graph{T, Z}) where {T, Z}
                 push!(connected_components, new_component)
             # add the edge and the node that connects it to the connected component
             elseif length(add_edge_to) == 1
-                if node1(edge) in nodes(add_edge_to[1])
+                if debut(edge) in nodes(add_edge_to[1])
                     add_node_and_edge!(add_edge_to[1], fin(edge), edge)
                 else
                     add_node_and_edge!(add_edge_to[1], debut(edge), edge)

@@ -29,7 +29,7 @@ function add_node!(graph::AbstractGraph{Node{T}, Z}, node::Node{T}) where {T, Z}
 end
 
 """Ajoute un edge au graphe."""
-function add_edge!(graph::AbstractGraph{T, Z}, edge::AbstractEdge{T, Z}) where {T, Z} 
+function add_edge!(graph::AbstractGraph{T, Z}, edge::AbstractEdge{Z, T}) where {T, Z} 
   push!(graph.edges, edge)
   graph
 end

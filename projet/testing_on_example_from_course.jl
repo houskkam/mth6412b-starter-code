@@ -5,7 +5,7 @@ include("graph.jl")
 include("edge_oriented.jl")
 include("composante_connexe.jl")
 include("arbre_de_recouvrement.jl")
-include("prim.jl")
+#include("prim.jl")
 
 # Initializing nodes from example from laboratories
 noeud1 = Node("a", "a")
@@ -45,8 +45,11 @@ kruskal_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, kru
 expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
 
 # Testing kruskal connected component
-print(kruskal(G))
+kruskal_component = kruskal(G)
+print(kruskal_component)
 print("\n")
 print(expected_connected_component_kruskal)
+
+testing_components_equal(kruskal_component, expected_connected_component_kruskal)
 #@test kruskal(G) == expected_connected_component_kruskal
 

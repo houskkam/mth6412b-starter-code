@@ -34,6 +34,19 @@ end
 """Determines that connected components are equal if their contents equal."""
 ==(c1::ComposanteConnexe, c2::ComposanteConnexe) = (nodes(c1) == nodes(c2)) && (edges(c1) == edges(c2))
 
+"""Used to make sure two connected components contain the same nodes and edges."""
+function testing_components_equal(c1::ComposanteConnexe, c2::ComposanteConnexe)
+  @test length(nodes(c1)) == length(nodes(c1))
+  @test length(edges(c2)) == length(edges(c2))
+
+  for each in nodes(c1)
+      @test each in nodes(c2)
+  end
+  for each in edges(c1)
+      @test each in edges(c2)
+  end
+end
+
 """Takes a vector of connected components and merges them into one."""
 function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
   new_component = composantes[1]
