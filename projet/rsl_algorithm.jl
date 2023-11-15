@@ -1,11 +1,48 @@
 include("node.jl")
 using Test
 include("prim.jl")
+include("composante_connexe.jl")
 
+"""
+Returns a preordre traversal of a given graph.
+"""
+function preorder!(tree::ComposanteConnexe{T, Z}) where {T, Z}
+
+end
+
+"""
+Returns true if the triangle inequality : c(u,w) <= c(u,v) + c(v,w)
+is valid for the graph, false if it is not.
+"""
+function has_triang_inequality(g::Graph{T, Z}) where {T, Z}
+    for e in edges(g)
+        n1 = node1(e)
+        n2 = node2(e)
+        for n3 in nodes(g)
+            if !isnothing(get_edge(g, n1, n3)) && !isnothing(get_edge(g, n2, n3))
+                # if there exists a case where the triangle inequality of cost
+                # is not satisfied, return false
+                if poids(e) > poids(get_edge(g, n1, n3))+poids(get_edge(g, n2, n3))
+                    return false
+                end
+            end
+        end
+    end
+    # we checked all edges of the graph and found none that would not satisfy the triangle inequality
+    return true
+end
+
+"""
+Returns a cycle withing the given graph using Rosenkrantz, Stearns and Lewis algorithm.
+"""
 function lewis(graph::Graph{T, Z}) where {T, Z}
+
+    if !has_triang_inequality
+        return false
+    end
     start_point = nodes(graph)[1]
     minimum_spanning_tree = prim_alg(graph, start_point)
-    
+
 end
 
 
