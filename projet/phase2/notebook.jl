@@ -9,14 +9,14 @@ using InteractiveUtils
 begin
 import Pkg
 Pkg.add("Plots")
-include("projet\\phase1\\node.jl")
-include("projet\\phase1\\edge.jl")
-include("projet\\phase1\\graph.jl")
-include("projet\\phase1\\read_stsp.jl")
+include("node.jl")
+include("edge.jl")
+include("graph.jl")
+include("read_stsp.jl")
 end
 
-# ╔═╡ 3334fbc2-a2bc-400e-9011-81fc018566ff
-# First exercice of Phase 2
+# ╔═╡ ca77176e-f1d2-46e9-b881-56a901c65856
+### First exercice of Phase 2
 # We decided to represent connected component as a oriented graph with a root. We created two new datatypes for that.
 # The first one is EdgeOriented, which implements AbstractEdge. It is very similar to normal Edge but it has a start and an end.
 # We also added a function that converts an Edge to EdgeOriented.
@@ -59,6 +59,7 @@ begin
     end
 end
 
+# ╔═╡ 4568f3d3-e8f1-4503-bd69-93261364646d
 # Then we used it to create the ComposanteConnexe type, which is a connected component. It is a subtype of AbstractGraph, so all methods that are implemented for AbstractGraph function for ComposanteConnexe too.
 begin
 
@@ -94,23 +95,6 @@ begin
     """Determines that connected components are equal if their contents equal."""
     ==(c1::ComposanteConnexe, c2::ComposanteConnexe) = (nodes(c1) == nodes(c2)) && (edges(c1) == edges(c2))
 
-    """Takes a vector of connected components and merges them into one."""
-    function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
-    new_component = composantes[1]
-    for node in nodes(composantes[2])
-        if !(node in nodes(new_component))
-        add_node!(new_component, node)
-        end
-    end
-    for edge in edges(composantes[2])
-        add_edge!(new_component, edge)
-    end
-    if(length(composantes) > 2)
-        print("have to connect more than 2 components")
-    end
-    add_edge!(new_component, edge)
-    new_component
-    end
 
     """Affiche un graphe."""
     function show(graph::ComposanteConnexe)
@@ -126,160 +110,11 @@ begin
 
 end
 
-
-# ╔═╡ 6664eaff-46ae-4f26-a297-3eb2f2a74294
-# Second exercice of Phase 2
-# Firstly, here is my code for the Kruskal algorithm:
-begin
-    function kruskal(graph::Graph{T, Z}) where {T, Z}
-        sorted_edges = sort(graph.edges)
-        connected_components = Vector{ComposanteConnexe{T, Z}}()
-        num_added_edges = 0
-        should_add = true
-        for edge in sorted_edges
-            should_add = true
-            add_edge_to = Vector{ComposanteConnexe{T, Z}}()
-            for component in connected_components
-                # if both nodes already exist in the came cnnected component, 
-                # there is already a way between them, so we will not add this edge
-                if (node1(edge) in nodes(component)) && (node2(edge) in nodes(component))
-                    should_add = false
-                    break
-                # if one of the nodes is already in one of the composed components, we note the component        
-                elseif (node1(edge) in nodes(component)) || (node2(edge) in nodes(component))
-                    push!(add_edge_to, component)
-                end
-            end
-            if should_add
-                edge = convert(EdgeOriented{Z,T}, edge)
-                #print("#\n")
-                #print(edge, length(add_edge_to))
-                # create new one and add it to the list of existing components
-                if length(add_edge_to) == 0
-                    new_component = ComposanteConnexe(debut(edge), [debut(edge), fin(edge)], [edge])
-                    push!(connected_components, new_component)
-                # add the edge and the node that connects it to the connected component
-                elseif length(add_edge_to) == 1
-                    if debut(edge) in nodes(add_edge_to[1])
-                        add_node_and_edge!(add_edge_to[1], fin(edge), edge)
-                    else
-                        add_node_and_edge!(add_edge_to[1], debut(edge), edge)
-                    end
-                # I have to connect all components and the new edge from add_edge_to into one,
-                # delete the old unconnected components               
-                else
-                    push!(connected_components, connect_into_one(add_edge_to, edge))
-                    for component in add_edge_to
-                        component_idx = findfirst(==(component), connected_components)
-                        deleteat!(connected_components, component_idx)
-                    end
-                end
-                num_added_edges = num_added_edges + 1
-            end
-            if num_added_edges >= length(graph.nodes)
-                break
-            end
-        end
-        if length(connected_components) > 1
-            println("error, too many connected components left")
-        end
-        connected_components[1]
-    end
-end
-
-# It also use a function that I added to the ComposanteConnexe
-begin
-    """Takes a vector of connected components and merges them into one."""
-    function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
-    new_component = composantes[1]
-    for node in nodes(composantes[2])
-        if !(node in nodes(new_component))
-        add_node!(new_component, node)
-        end
-    end
-    for edge in edges(composantes[2])
-        add_edge!(new_component, edge)
-    end
-    if(length(composantes) > 2)
-        print("have to connect more than 2 components")
-    end
-    add_edge!(new_component, edge)
-    new_component
-    end
-end
-
-# Now I will be testing whether it gives the correct result for the graph that
-# we saw on lab slides
-begin
-    using Test
-    # Initializing nodes from example from laboratories
-    noeud1 = Node("a", "a")
-    noeud2 = Node("b", "b")
-    noeud3 = Node("c", "c")
-    noeud4 = Node("d", "d")
-    noeud5 = Node("e", "e")
-    noeud6 = Node("f", "f")
-    noeud7 = Node("g", "g")
-    noeud8 = Node("h", "h")
-    noeud9 = Node("i", "i")
-
-    # Initializing edges from example from laboratories
-    edge1 = Edge(noeud1, noeud2, 4.0)
-    edge2 = Edge(noeud1, noeud8, 8.0)
-    edge3 = Edge(noeud2, noeud8, 11.0)
-    edge4 = Edge(noeud2, noeud3, 8.0)
-    edge5 = Edge(noeud8, noeud9, 7.0)
-    edge6 = Edge(noeud8, noeud7, 1.0)
-    edge7 = Edge(noeud7, noeud9, 6.0)
-    edge8 = Edge(noeud9, noeud3, 2.0)
-    edge9 = Edge(noeud7, noeud6, 2.0)
-    edge10 = Edge(noeud3, noeud4, 7.0)
-    edge11 = Edge(noeud3, noeud6, 4.0)
-    edge12 = Edge(noeud4, noeud6, 14.0)
-    edge13 = Edge(noeud4, noeud5, 9.0)
-    edge14 = Edge(noeud6, noeud5, 10.0)
-
-    # Initializing graph from example from laboratories
-    lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noeud9]
-    lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
-    G = Graph("Lab", lab_nodes, lab_edges)
-
-    # Initializing expected kruskal connected component
-    kruskal_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
-    kruskal_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, kruskal_expected_edges)
-    expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
-
-    # Testing kruskal connected component
-    kruskal_component = kruskal(G)
-    print(kruskal_component)
-    print("\n")
-    print(expected_connected_component_kruskal)
-
-    testing_components_equal(kruskal_component, expected_connected_component_kruskal)
-end
-
-# The testing_components_equal function is implemented in ComposanteConnexe like this
-begin
-    """Used to make sure two connected components contain the same nodes and edges."""
-    function testing_components_equal(c1::ComposanteConnexe, c2::ComposanteConnexe)
-    @test length(nodes(c1)) == length(nodes(c1))
-    @test length(edges(c2)) == length(edges(c2))
-
-    for each in nodes(c1)
-        @test each in nodes(c2)
-    end
-    for each in edges(c1)
-        @test each in edges(c2)
-    end
-    end
-end
-
 # ╔═╡ b91cfa11-627a-44d6-a18c-ae8a4220608e
 # Third exercice of Phase 2
 #because composante connexe can lead to long chains and thus is time inefficient, another strategy can be used to form a chain.
 begin
-    #Include the other files we use  
-    include("../graph.jl")
+    #Include the other files we use: already done above
     
     #This new strategy starts from disjoints sets. Because this is not yet implemented, a new type is created. 
     #This is DisjointSet which gives a parent and rank for a certain node. 
@@ -445,219 +280,333 @@ end
 # ╔═╡ ac1db0f2-ec4a-4834-80b1-6d0b4c0d91ea
 # Fourth exercice of Phase 2
 begin 
-    #we include the other files we use 
-    include("graph.jl")
-    include("composante_connexe.jl") 
-    
-    #start of the function that uses prim algorithm to find the minimum spanning tree
-    function prim_alg(graph::Graph{T, Z}, startpoint::Node{T}) where {T, Z}
-        nodes_gr = nodes(graph)
-        minimum_spanning_tree = ComposanteConnexe{T, Z}(startpoint, [startpoint], Vector{Edge{T, Z}}())
-    
-        # un attribut min_weight -> Initialement, min_weight = infinity ; Initialement, le parent de chaque noeud est nothing
-        for node in nodes_gr
-            node.min_weight = Inf
-            node.parent = nothing
-        end
-    
-        # Begin at a source node s (startpoint) chosen by the user, and set the min_weight attribute of s to 0
-        startpoint.min_weight = 0
 
-        # Initialize the set inTree to keep track of nodes included in the minimum spanning tree
-        inTree = Set{Node{T}}([startpoint])
-    
-        #A priority queue contains all the nodes that have not yet been added to the tree, and min_weight determines the priority.
-        #Each time a node is connected to the tree, the min_weight and parent attributes of those that have not yet been connected must be updated.
-        pq = PriorityQueue{Int,Node{T}}()
-        enqueue!(pq,startpoint.min_weight,startpoint)
-    
+    using DataStructures
+
+    #I introduce a new structure so that in the priority queue the nodes can be added multiple times, also the edge is added,
+    #this way we can get it easier when putting in the minimum spanning tree.
+    mutable struct NodeKey{T,Z}
+        node::Node{T}
+        edge::EdgeOriented{Z,Node{T}}
+        it::Int
+    end
+
+    #start of the function that uses prim algorithm to find the minimum spanning tree
+	""" This function gets as an argument an instance of Graph 
+  and a startpoint of type Node.
+  It returns the graph's spanning tree of type ComposanteConnexe 
+  while using Prim's algorithm beginning at the node startpoint
+"""
+    function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
+        nodes_gr = nodes(graph)
+        minimum_spanning_tree = ComposanteConnexe{Node{T}, Z}(startpoint, [startpoint], [])
+
+        min_weights= Dict{Node{T}, Float64}()
+        parents = Dict{Node{T}, Node{T}}()
+
+        # un attribut min_weight -> Initialement, min_weight = -1 ; Initialement, le parent de chaque noeud est nothing
+        for node in nodes_gr
+            # everything will be added to the dictionary
+            min_weights[node] = Inf
+        end
+
+        #débute en un noeud source s(startpoint) choisi par l’utilisateur et l’attribut min_weight de s est 0 ;
+        #startpoint.min_weight = 0
+        min_weights[startpoint] = 0
+
+        # Initialisation de l'ensemble inTree pour suivre les nœuds inclus dans l'arbre de couverture minimale
+        inTree =  Set{Node{T}}()
+
+        #Priorityqueue contains all the nodes in increasing min weight that can be added to the minimum spanning tree.
+        pq = PriorityQueue{NodeKey{T,Z},Int}()
+        it=0
+        edge_nodekey=EdgeOriented(startpoint, startpoint, 0.0)
+        enqueue!(pq,NodeKey(startpoint,edge_nodekey,it),min_weights[startpoint])
+
         while !isempty(pq)
-            # The first node in the pair is the node with the minimum weight.
-            w = dequeue!(pq)
-    
-            # If the node is already included , continue to the next
+         #we add to it every time so that the same nodes can be added to the queue different times but they won't be exactly the same 
+            it+=1
+            node_key = dequeue!(pq)
+            #we need to get the edge and the node
+            w, h = node_key.node, node_key.edge
+            #w = dequeue!(pq).node
+            #println(w)
+
+            # Si le nœud est déjà inclus dans l'arbre, passez au suivant
             if  w in inTree
                 continue
             end
-            
-            # Mark the node as included
-            inTree = union(inTree, Set{Node{T}}([w]))  
-    
+        
+            #we push both in node and in the minimum spanning tree
+            push!(inTree,w)
+            add_node_and_edge!(minimum_spanning_tree, w, h)
+
+
             # Iterate through all adjacent nodes of w
-            for edge in get_edges_for_node(graph, w)
-                # Find the other node connected by the edge
-                u= ifelse(node1(edge) == w, node2(edge), node1(edge)) 
+            for edge in get_oriented_edges(graph, w)
+                #println(min_weights)
+                u= ifelse(debut(edge) == w, fin(edge), debut(edge))  # Trouver l'autre nœud connecté par l'arête
                 weight= poids(edge)
-    
+                #println(u,weight)
+
+
                 # If v is not in min. spanning tree and the weight of (u, v) is smaller than the current key of v
-                if u ∉ inTree && weight < u.min_weight
-                    u.min_weight = weight
-                    u.parent = w
-                    
-                    #add in the priority queue
-                    enqueue!(pq, u.minweight, u)
-    
+                if u ∉ inTree && weight < min_weights[u]
+                    min_weights[u] = weight
+                    parents[u] = w
+
+                    enqueue!(pq, NodeKey(u,edge,it), min_weights[u])
+
                     #add edge to minimum spanning tree
-                    add_node_and_edge!(minimum_spanning_tree, u, edge)
+                    #add_node_and_edge!(minimum_spanning_tree, u, edge)
                 end
             end
-        end
-        #give the minimum spanning tree back
+        end 
+
+        #we delete the initial zero value we gave for initializing with the startpoint
+        component_idx = findfirst(==(startpoint), nodes(minimum_spanning_tree))
+        deleteat!(nodes(minimum_spanning_tree), component_idx)
+
+        #we delete the initial zero value we gave for initializing with the edges
+        component_idx = findfirst(==(edge_nodekey), edges(minimum_spanning_tree))
+        deleteat!(edges(minimum_spanning_tree), component_idx)
         return minimum_spanning_tree
-    
     end
 
-    using DataStructures
-include("graph.jl")
-include("composante_connexe.jl")
-
-#I introduce a new structure so that in the priority queue the nodes can be added multiple times, also the edge is added,
-#this way we can get it easier when putting in the minimum spanning tree.
-mutable struct NodeKey{T,Z}
-    node::Node{T}
-    edge::EdgeOriented{Z,Node{T}}
-    it::Int
-  end
-
-#start of the function that uses prim algorithm to find the minimum spanning tree
-function prim_alg(graph::Graph{Node{T}, Z}, startpoint::Node{T}) where {T, Z}
-    nodes_gr = nodes(graph)
-    minimum_spanning_tree = ComposanteConnexe{Node{T}, Z}(startpoint, [startpoint], [])
-
-    min_weights= Dict{Node{T}, Float64}()
-    parents = Dict{Node{T}, Node{T}}()
-
-    # un attribut min_weight -> Initialement, min_weight = -1 ; Initialement, le parent de chaque noeud est nothing
-    for node in nodes_gr
-        # everything will be added to the dictionary
-        min_weights[node] = Inf
-    end
-
-    #débute en un noeud source s(startpoint) choisi par l’utilisateur et l’attribut min_weight de s est 0 ;
-    #startpoint.min_weight = 0
-    min_weights[startpoint] = 0
-
-    # Initialisation de l'ensemble inTree pour suivre les nœuds inclus dans l'arbre de couverture minimale
-    inTree =  Set{Node{T}}()
-
-    #Priorityqueue contains all the nodes in increasing min weight that can be added to the minimum spanning tree.
-    pq = PriorityQueue{NodeKey{T,Z},Int}()
-    it=0
-    edge_nodekey=EdgeOriented(startpoint, startpoint, 0.0)
-    enqueue!(pq,NodeKey(startpoint,edge_nodekey,it),min_weights[startpoint])
-
-    while !isempty(pq)
-        #we add to it every time so that the same nodes can be added to the queue different times but they won't be exactly the same 
-        it+=1
-        node_key = dequeue!(pq)
-        #we need to get the edge and the node
-        w, h = node_key.node, node_key.edge
-        #w = dequeue!(pq).node
-        #println(w)
-
-        # Si le nœud est déjà inclus dans l'arbre, passez au suivant
-        if  w in inTree
-            continue
-        end
-        
-        #we push both in node and in the minimum spanning tree
-        push!(inTree,w)
-        add_node_and_edge!(minimum_spanning_tree, w, h)
-
-
-        # Iterate through all adjacent nodes of w
-        for edge in get_oriented_edges(graph, w)
-            #println(min_weights)
-            u= ifelse(debut(edge) == w, fin(edge), debut(edge))  # Trouver l'autre nœud connecté par l'arête
-            weight= poids(edge)
-            #println(u,weight)
-
-
-            # If v is not in min. spanning tree and the weight of (u, v) is smaller than the current key of v
-            if u ∉ inTree && weight < min_weights[u]
-                min_weights[u] = weight
-                parents[u] = w
-
-                enqueue!(pq, NodeKey(u,edge,it), min_weights[u])
-
-                #add edge to minimum spanning tree
-                #add_node_and_edge!(minimum_spanning_tree, u, edge)
-            end
-        end
-    end
-
-    #we delete the initial zero value we gave for initializing with the startpoint
-    component_idx = findfirst(==(startpoint), nodes(minimum_spanning_tree))
-    deleteat!(nodes(minimum_spanning_tree), component_idx)
-
-    #we delete the initial zero value we gave for initializing with the edges
-    component_idx = findfirst(==(edge_nodekey), edges(minimum_spanning_tree))
-    deleteat!(edges(minimum_spanning_tree), component_idx)
-    return minimum_spanning_tree
-
-end
 
 #This will be tested with the following example
 #everything that is necessary will be included
-using Test
-include("node.jl")
-include("edge.jl")
-include("graph.jl")
-include("edge_oriented.jl")
-include("composante_connexe.jl")
-include("arbre_de_recouvrement.jl")
-include("prim.jl")
 
-# Initializing nodes from example from laboratories
-noeud1 = Node("a", "a")
-noeud2 = Node("b", "b")
-noeud3 = Node("c", "c")
-noeud4 = Node("d", "d")
-noeud5 = Node("e", "e")
-noeud6 = Node("f", "f")
-noeud7 = Node("g", "g")
-noeud8 = Node("h", "h")
-noeud9 = Node("i", "i")
+# Initializing nodes from example from laboratories: already done above
 
-# Initializing edges from example from laboratories
-edge1 = Edge(noeud1, noeud2, 4.0)
-edge2 = Edge(noeud1, noeud8, 8.0)
-edge3 = Edge(noeud2, noeud8, 11.0)
-edge4 = Edge(noeud2, noeud3, 8.0)
-edge5 = Edge(noeud8, noeud9, 7.0)
-edge6 = Edge(noeud8, noeud7, 1.0)
-edge7 = Edge(noeud7, noeud9, 6.0)
-edge8 = Edge(noeud9, noeud3, 2.0)
-edge9 = Edge(noeud7, noeud6, 2.0)
-edge10 = Edge(noeud3, noeud4, 7.0)
-edge11 = Edge(noeud3, noeud6, 4.0)
-edge12 = Edge(noeud4, noeud6, 14.0)
-edge13 = Edge(noeud4, noeud5, 9.0)
-edge14 = Edge(noeud6, noeud5, 10.0)
+# Initializing edges from example from laboratories: already done above
 
-# Initializing graph from example from laboratories
-lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noeud9]
-lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
-G = Graph("Lab", lab_nodes, lab_edges)
-
-
+# Initializing graph from example from laboratories: already done above
 
 #Initializing expected prim connected components 
-prim_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
-prim_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, prim_expected_edges)
-expected_connected_component_prim = ComposanteConnexe(noeud1, lab_nodes, prim_expected_edges)
-
+	
 #calling up the written function to get a result
 result= prim_alg(G,noeud1)
 
 #testing wether they are the same
-testing_components_equal(result, expected_connected_component_prim)
+testing_components_equal(result, kruskal_component)
+print(result)
 end
 
 
+# ╔═╡ d47be2b9-a87d-4c52-9af4-b60e89f97cd9
+# It also use a function that I added to the ComposanteConnexe
+begin
+    """Takes a vector of connected components and merges them into one."""
+    function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::EdgeOriented{Z, T}) where {T, Z}
+    new_component = composantes[1]
+    for node in nodes(composantes[2])
+        if !(node in nodes(new_component))
+        add_node!(new_component, node)
+        end
+    end
+    for edge in edges(composantes[2])
+        add_edge!(new_component, edge)
+    end
+    if(length(composantes) > 2)
+        print("have to connect more than 2 components")
+    end
+    add_edge!(new_component, edge)
+    new_component
+    end
+end
+
+# ╔═╡ 3eba8a5b-16ee-4ba9-8e86-eb01a88d9a9f
+# Second exercice of Phase 2
+# Firstly, here is my code for the Kruskal algorithm:
+""" This function gets as an argument an instance of Graph and returns 
+    its spanning tree of type ComposanteConnexe while using Kruskal's algorithm
+"""
+begin
+    function kruskal(graph::Graph{T, Z}) where {T, Z}
+        sorted_edges = sort(graph.edges)
+        connected_components = Vector{ComposanteConnexe{T, Z}}()
+        num_added_edges = 0
+        should_add = true
+        for edge in sorted_edges
+            should_add = true
+            add_edge_to = Vector{ComposanteConnexe{T, Z}}()
+            for component in connected_components
+                # if both nodes already exist in the came cnnected component, 
+                # there is already a way between them, so we will not add this edge
+                if (node1(edge) in nodes(component)) && (node2(edge) in nodes(component))
+                    should_add = false
+                    break
+                # if one of the nodes is already in one of the composed components, we note the component        
+                elseif (node1(edge) in nodes(component)) || (node2(edge) in nodes(component))
+                    push!(add_edge_to, component)
+                end
+            end
+            if should_add
+                edge = convert(EdgeOriented{Z,T}, edge)
+                #print("#\n")
+                #print(edge, length(add_edge_to))
+                # create new one and add it to the list of existing components
+                if length(add_edge_to) == 0
+                    new_component = ComposanteConnexe(debut(edge), [debut(edge), fin(edge)], [edge])
+                    push!(connected_components, new_component)
+                # add the edge and the node that connects it to the connected component
+                elseif length(add_edge_to) == 1
+                    if debut(edge) in nodes(add_edge_to[1])
+                        add_node_and_edge!(add_edge_to[1], fin(edge), edge)
+                    else
+                        add_node_and_edge!(add_edge_to[1], debut(edge), edge)
+                    end
+                # I have to connect all components and the new edge from add_edge_to into one,
+                # delete the old unconnected components               
+                else
+                    push!(connected_components, connect_into_one(add_edge_to, edge))
+                    for component in add_edge_to
+                        component_idx = findfirst(==(component), connected_components)
+                        deleteat!(connected_components, component_idx)
+                    end
+                end
+                num_added_edges = num_added_edges + 1
+            end
+            if num_added_edges >= length(graph.nodes)
+                break
+            end
+        end
+        if length(connected_components) > 1
+            println("error, too many connected components left")
+        end
+        connected_components[1]
+    end
+end
+
+# ╔═╡ b10af4ac-d8a2-4eaf-84f0-2472fc3790c3
+
+# Now I will be testing whether it gives the correct result for the graph that
+# we saw on lab slides
+begin
+    using Test
+	# The testing_components_equal function is implemented in ComposanteConnexe like this
+
+    """Used to make sure two connected components contain the same nodes and edges."""
+    function testing_components_equal(c1::ComposanteConnexe, c2::ComposanteConnexe)
+    	@test length(nodes(c1)) == length(nodes(c1))
+    	@test length(edges(c2)) == length(edges(c2))
+
+    	for each in nodes(c1)
+     	   @test each in nodes(c2)
+    	end
+    	for each in edges(c1)
+    	    @test each in edges(c2)
+    	end
+    end
+
+    # Initializing nodes from example from laboratories
+    noeud1 = Node("a", "a")
+    noeud2 = Node("b", "b")
+    noeud3 = Node("c", "c")
+    noeud4 = Node("d", "d")
+    noeud5 = Node("e", "e")
+    noeud6 = Node("f", "f")
+    noeud7 = Node("g", "g")
+    noeud8 = Node("h", "h")
+    noeud9 = Node("i", "i")
+
+    # Initializing edges from example from laboratories
+    edge1 = Edge(noeud1, noeud2, 4.0)
+    edge2 = Edge(noeud1, noeud8, 8.0)
+    edge3 = Edge(noeud2, noeud8, 11.0)
+    edge4 = Edge(noeud2, noeud3, 8.0)
+    edge5 = Edge(noeud8, noeud9, 7.0)
+    edge6 = Edge(noeud8, noeud7, 1.0)
+    edge7 = Edge(noeud7, noeud9, 6.0)
+    edge8 = Edge(noeud9, noeud3, 2.0)
+    edge9 = Edge(noeud7, noeud6, 2.0)
+    edge10 = Edge(noeud3, noeud4, 7.0)
+    edge11 = Edge(noeud3, noeud6, 4.0)
+    edge12 = Edge(noeud4, noeud6, 14.0)
+    edge13 = Edge(noeud4, noeud5, 9.0)
+    edge14 = Edge(noeud6, noeud5, 10.0)
+
+    # Initializing graph from example from laboratories
+    lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noeud9]
+    lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
+    G = Graph("Lab", lab_nodes, lab_edges)
+
+    # Initializing expected kruskal connected component
+    kruskal_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
+    kruskal_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, kruskal_expected_edges)
+    expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
+
+    # Testing kruskal connected component
+    kruskal_component = kruskal(G)
+    print(kruskal_component)
+    print("\n")
+    print(expected_connected_component_kruskal)
+
+    testing_components_equal(kruskal_component, expected_connected_component_kruskal)
+end
+
+# ╔═╡ 412e84b5-dd2a-41b3-ac21-6bd64b11136f
+#Fifth exercise of Phase2
+# Testing node.jl
+begin
+	noeud1 = Node("James", "ahooj")
+	@test name(noeud1) == "James"
+	@test data(noeud1) == "ahooj"
+
+	noeud2 = Node("Kirk", "guitar")
+	noeud3 = Node("Lars", 2)
+	noeud4 = Node("Lars", "char")
+
+
+	# Testing edge.jl
+	edge1 = Edge(noeud1, noeud2, 5)
+	@test node1(edge1) == noeud1
+	@test node2(edge1) == noeud2
+	@test poids(edge1) == 5
+
+	@test_throws MethodError Edge(noeud1, noeud3, 5)
+
+	oriente_edge = EdgeOriented(noeud1, noeud2, 3)
+	@test debut(oriente_edge) == noeud1
+	@test fin(oriente_edge) == noeud2
+	@test poids(oriente_edge) == 3
+
+	edge2 = Edge(noeud1, noeud2, 5)
+
+	# Testing graph.jl
+	G = Graph("Ick", [noeud1, noeud2, noeud4], [edge1, edge2])
+
+	@test name(G) == "Ick"
+	@test nodes(G) == [noeud1, noeud2, noeud4]
+	@test edges(G) == [edge1, edge2]
+
+	edge_oriented_1 = EdgeOriented(noeud1, noeud2, 5)
+	edge_oriented_2 = EdgeOriented(noeud2, noeud4, 4)
+    
+	C = ComposanteConnexe(noeud1, [noeud1, noeud2, noeud4], [edge_oriented_1, edge_oriented_2])
+
+	@test nodes(C) == [noeud1, noeud2, noeud4]
+	@test edges(C) == [edge_oriented_1, edge_oriented_2]
+
+	@test isless(edge_oriented_1, edge_oriented_2) == false
+	@test <(edge_oriented_1, edge_oriented_2) == false
+	@test >(edge_oriented_1, edge_oriented_2) == true
+
+	v = [edge_oriented_1, edge_oriented_2, edge_oriented_2]
+	sort!(v)
+
+	@test sort([edge_oriented_1, edge_oriented_2]) == [edge_oriented_2, edge_oriented_1]
+	@test convert(EdgeOriented, edge1) == EdgeOriented{Int64, Node{String}}(Node{String}("James", "ahooj"), Node{String}("Kirk", "guitar"), 5)
+end
+
 # ╔═╡ Cell order:
 # ╠═75572c3f-0fea-4b7a-aa67-6d97661f5da6
-# ╠═3334fbc2-a2bc-400e-9011-81fc018566ff
-# ╠═6664eaff-46ae-4f26-a297-3eb2f2a74294
+# ╠═ca77176e-f1d2-46e9-b881-56a901c65856
+# ╠═4568f3d3-e8f1-4503-bd69-93261364646d
+# ╠═3eba8a5b-16ee-4ba9-8e86-eb01a88d9a9f
+# ╠═d47be2b9-a87d-4c52-9af4-b60e89f97cd9
+# ╠═b10af4ac-d8a2-4eaf-84f0-2472fc3790c3
 # ╠═b91cfa11-627a-44d6-a18c-ae8a4220608e
 # ╠═ac1db0f2-ec4a-4834-80b1-6d0b4c0d91ea
+# ╠═412e84b5-dd2a-41b3-ac21-6bd64b11136f
