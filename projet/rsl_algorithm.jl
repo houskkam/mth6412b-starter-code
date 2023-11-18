@@ -2,24 +2,43 @@ include("node.jl")
 using Test
 include("prim.jl")
 include("composante_connexe.jl")
+include("tree.jl")
+include("graph.jl")
 
 """
-Returns a preordre traversal of a given graph.
+Pré ordre: examiner le noeud courant, parcourir le sous-arbre de gauche, parcourir le sous-arbre de droite
 """
-#isn't done yet, wrong.
-#why did you only put tree inside? 
-function preorder!(tree::ComposanteConnexe{T, Z}) where {T, Z}
-    #Pré ordre: examiner le noeud courant, parcourir le sous-arbre de gauche, parcourir le sous-arbre de droite ;
-    tour_nodes= Vector{Node{T}}() #empty vector with all the nodes
-    root= tree.root #gives the root of the tree 
-    while !isempty(tour_nodes) 
-        current=pop!(tour_nodes)
-        add_node_and_edge!(tree,nodes(current),edges(current))
-        for t in nodes(root) #looks for the children in ordre
-            if t != root # in nodes of tree is also the root, this can't be chosen again.
-                push!(tour_nodes,t)
+function preordre_nodes!(root::Tree{T}, tour_nodes::Vector{Node{T}}) where T
+    isnothing(root) && return 
+    push!(tour_nodes, get_node(root))
+    for t in children(root)
+        preordre_nodes!(t, tour_nodes)
+    end
+    tour_nodes
+end
+
+"""
+Returns the edges connecting nodes ordered by a preordre traversal of a given graph.
+"""
+function preorder_not_recursive!(tree::Tree{T}, g::Graph{Node{T}, Z}) where {T, Z}
+    tour_nodes = Vector{Node{T}}() #empty vector with all the nodes
+    tour_nodes = preordre_nodes!(tree, tour_nodes)
+    tour_edges = Vector{AbstractEdge{Z, Node{T}}}()
+
+    for i in 1:(length(tour_nodes) - 1)
+        e = get_edge(g, tour_nodes[i], tour_nodes[i+1])
+        if !(isnothing(e))
+            push!(tour_edges, e)
         end
-    tree
+    end
+    e = get_edge(g, tour_nodes[1], tour_nodes[length(tour_nodes)])
+    if !(isnothing(e))
+        push!(tour_edges, e)
+    else
+        println("Did not find a cycle")
+    end
+
+    tour_edges
 end
 
 
@@ -48,14 +67,23 @@ end
 """
 Returns a cycle withing the given graph using Rosenkrantz, Stearns and Lewis algorithm.
 """
-function lewis(graph::Graph{T, Z}) where {T, Z}
-
-    if !has_triang_inequality
+function lewis(graph::Graph{Node{T}, Z}, start_point::Node{T}) where {T, Z}
+    # make sure the triangle inequality holds
+    if !has_triang_inequality(graph)
         return false
     end
-    start_point = nodes(graph)[1]
     minimum_spanning_tree = prim_alg(graph, start_point)
 
+    tree_structure = Tree(start_point,  Vector{Tree{T}}(), missing)
+    aleady_added = Vector{Node{T}}()
+    push!(aleady_added, start_point)
+    create_child!(minimum_spanning_tree, tree_structure, aleady_added)
+
+    tour_edges = preorder_not_recursive!(tree_structure, graph)
+
+    cycle_weight = sum(poids.(tour_edges))
+    println("Weight of the cycle: $(cycle_weight)")
+    return tour_edges#Graph{T}("RSL_Cycle of $(name(graph))", nodes(graph), tour_edges)
 end
 
 
@@ -91,5 +119,7 @@ lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noe
 lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
 G = Graph("Lab", lab_nodes, lab_edges)
 
-lewis(G)
+start_point = nodes(G)[1]
+typeof(start_point)
+lewis(G, start_point)
 
