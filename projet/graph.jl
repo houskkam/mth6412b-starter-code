@@ -66,7 +66,7 @@ end
 
 """ Returns an edge of a graph g with nodes n1 et n2 if such edge exists.
     Otherwise it returns nothing. """
-function get_edge(g::AbstractGraph{Z, Node{T}}, n1::Node{T}, n2::Node{T}) where {Z, T}
+function get_edge(g::AbstractGraph{Node{T}, Z}, n1::Node{T}, n2::Node{T}) where {Z, T}
     i = findfirst(x -> (node1(x), node2(x)) == (n1, n2) , edges(g))
     if isnothing(i)
       i = findfirst(x -> (node2(x), node1(x)) == (n2, n1) , edges(g))
