@@ -6,9 +6,22 @@ include("composante_connexe.jl")
 """
 Returns a preordre traversal of a given graph.
 """
+#isn't done yet, wrong.
+#why did you only put tree inside? 
 function preorder!(tree::ComposanteConnexe{T, Z}) where {T, Z}
-
+    #Pré ordre: examiner le noeud courant, parcourir le sous-arbre de gauche, parcourir le sous-arbre de droite ;
+    tour_nodes= Vector{Node{T}}() #empty vector with all the nodes
+    root= tree.root #gives the root of the tree 
+    while !isempty(tour_nodes) 
+        current=pop!(tour_nodes)
+        add_node_and_edge!(tree,nodes(current),edges(current))
+        for t in nodes(root) #looks for the children in ordre
+            if t != root # in nodes of tree is also the root, this can't be chosen again.
+                push!(tour_nodes,t)
+        end
+    tree
 end
+
 
 """
 Returns true if the triangle inequality : c(u,w) <= c(u,v) + c(v,w)
