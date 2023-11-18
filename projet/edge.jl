@@ -31,18 +31,6 @@ node2(edge::Edge) = edge.node2
 """Renvoie le poids d'un edge."""
 poids(edge::AbstractEdge) = edge.poids
 
-""" Returns an edge of a graph g with nodes n1 et n2 if such edge exists.
-    Otherwise it returns nothing. """
-function get_edge(g::Graph{Z, Node{T}}, n1::Node{T}, n2::Node{T}) where {Z, T}
-    i = findfirst(x -> (node1(x), node2(x)) == (n1, n2) , edges(g))
-    if isnothing(i)
-      i = findfirst(x -> (node2(x), node1(x)) == (n2, n1) , edges(g))
-      if isnothing(i)
-        return nothing
-      end
-    end
-  return edges(g)[i]
-end
 
 """Determines that being bigger than for type AbstractEdge depends on weight."""
 Base.isless(x::AbstractEdge, y::AbstractEdge) = poids(x) < poids(y)

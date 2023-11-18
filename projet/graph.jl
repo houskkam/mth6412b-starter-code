@@ -64,6 +64,19 @@ function show(graph::Graph)
   end
 end
 
+""" Returns an edge of a graph g with nodes n1 et n2 if such edge exists.
+    Otherwise it returns nothing. """
+function get_edge(g::AbstractGraph{Z, Node{T}}, n1::Node{T}, n2::Node{T}) where {Z, T}
+    i = findfirst(x -> (node1(x), node2(x)) == (n1, n2) , edges(g))
+    if isnothing(i)
+      i = findfirst(x -> (node2(x), node1(x)) == (n2, n1) , edges(g))
+      if isnothing(i)
+        return nothing
+      end
+    end
+  return edges(g)[i]
+end
+
 "Get all the edges for a certain node"
 function get_edges_for_node(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
   corresponding_edges = Vector{Edge{Z, T}}()
