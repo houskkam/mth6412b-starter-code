@@ -1,4 +1,6 @@
 import Base.show
+include("edge.jl")
+include("edge_oriented.jl")
 
 """Type abstrait dont d'autres types de graphes dériveront."""
 abstract type AbstractGraph{T, Z} end
@@ -69,7 +71,7 @@ end
 function get_edge(g::AbstractGraph{Node{T}, Z}, n1::Node{T}, n2::Node{T}) where {Z, T}
     i = findfirst(x -> (node1(x), node2(x)) == (n1, n2) , edges(g))
     if isnothing(i)
-      i = findfirst(x -> (node2(x), node1(x)) == (n2, n1) , edges(g))
+      i = findfirst(x -> (node1(x), node2(x)) == (n2, n1) , edges(g))
       if isnothing(i)
         return nothing
       end
@@ -78,7 +80,7 @@ function get_edge(g::AbstractGraph{Node{T}, Z}, n1::Node{T}, n2::Node{T}) where 
 end
 
 "Get all the edges for a certain node"
-function get_edges_for_node(graph::AbstractGraph{T, Z}, node::T) where {T, Z}
+function get_edges_for_node(graph::Graph{T, Z}, node::T) where {T, Z}
   corresponding_edges = Vector{Edge{Z, T}}()
   for edge in edges(graph)
       if edge.node1 == node || edge.node2 == node

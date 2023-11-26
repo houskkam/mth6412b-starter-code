@@ -30,6 +30,11 @@ function add_node_and_edge!(composante::ComposanteConnexe{Node{T}, Z}, node::Nod
   composante
 end
 
+function set_nodes!(composante::ComposanteConnexe{Node{T}, Z}, new_nodes::Vector{Node{T}}) where {T, Z}
+  composante.nodes = new_nodes
+  composante
+end
+
 
 """Determines that connected components are equal if their contents equal."""
 ==(c1::ComposanteConnexe, c2::ComposanteConnexe) = (nodes(c1) == nodes(c2)) && (edges(c1) == edges(c2))
@@ -63,6 +68,17 @@ function connect_into_one(composantes::Vector{ComposanteConnexe{T, Z}}, edge::Ed
   end
   add_edge!(new_component, edge)
   new_component
+end
+
+"Get all the edges for a certain node"
+function get_edges_for_node(graph::ComposanteConnexe{T, Z}, node::T) where {T, Z}
+  corresponding_edges = []
+  for edge in edges(graph)
+      if edge.debut == node || edge.fin == node
+          push!(corresponding_edges, edge)
+      end
+  end
+  return corresponding_edges
 end
 
 """Affiche un graphe."""
