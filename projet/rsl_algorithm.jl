@@ -90,18 +90,26 @@ end
 """
 Returns a cycle withing the given graph using Rosenkrantz, Stearns and Lewis algorithm.
 """
-function lewis(graph::Graph{Node{T}, Z}, start_point::Node{T}) where {T, Z}
+function lewis(graph::Graph{Node{T}, Z}, start_point::Node{T}, using_kruskail::Bool) where {T, Z}
+    starting_time = time()
+
     # make sure the triangle inequality holds
     if !has_triang_inequality(graph)
         return false
     end
-
-    minimum_spanning_tree = kruskal(graph)
+    starting_time_no_test = time()
+    
+    if using_kruskail
+        minimum_spanning_tree = kruskal(graph)
+    else
+        minimum_spanning_tree = prim_alg(graph, start_point)
+    end
     
     my_nodes = preordre_graph!(minimum_spanning_tree, start_point, start_point, [start_point])
     
     tour_edges = []
     tour_edges = get_edges(graph, my_nodes)
-    return tour_edges
+    elapsed_time = time() - starting_time
+    return (tour_edges, elapsed_time, time() - starting_time_no_test)
 end
 
