@@ -596,6 +596,15 @@ md"""
 #### Testing 
 After creating the code, tests can be used to verify the algorithm.
 Because the held Karp algorithm uses a startpoint, the optimal startpoint when testing an example has to be done by searching for this optimal point via trial and error.
+Unfortunately there is an error that we couldn't solve in time, leading to the disability to properly test our code.
+The TSP test would start with 
+
+```julia
+G = get_graph_from_file(pwd() * "\\instances\\stsp\\bayg29.tsp")
+#we need to test with starting node is the most efficient so we change j
+j=1
+held_karp(G,nodes(G)[j],60, 100.0)
+```
 """
 
 # ╔═╡ Cell order:

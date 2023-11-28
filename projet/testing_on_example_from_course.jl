@@ -46,6 +46,7 @@ expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, krus
 
 # Testing kruskal connected component
 kruskal_component = kruskal(G)
+print("volledig")
 print(kruskal_component)
 print("\n")
 print(expected_connected_component_kruskal)
