@@ -3,8 +3,9 @@ include("graph.jl")
 include("composante_connexe.jl")
 include("prim.jl")
 include("arbre_de_recouvrement.jl")
+include("edge_oriented.jl")
 
-
+include("edge.jl")
 "
 HK algorithm
 1. Let k=0, pi^0=0 and W=-inf. 
@@ -39,12 +40,13 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
     edges_base = filter(x -> !(x in to_remove), edges(graph))
     
     # Gets the MST tree and its corresponding connex component c for the subgraph graph[V\{root}]
-    component = kruskal(Graph("", nodes_base, edges_base))
+    temp_graph = Graph("", nodes_base, edges_base)
+    component = kruskal(temp_graph)
     #println(component)
-    length(component.nodes) != 1 && error("kruskal has more than 1 component")
+    #length(component.nodes) != 1 && error("kruskal has more than 1 component")
 
     #kruskal only gives the composante_connexe back and we also want a tree to be given back
-    edges_tree = edges(component)
+    edges_tree = convert(Vector{Edge{Z, Node{T}}},edges(component))
 
     tree_structure = Graph("MST", nodes_base, edges_tree)
     
@@ -59,7 +61,7 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
     leaves = filter(kv -> kv.second == 1, node_degrees)
    
     # Order these edges by weight
-    edge_sorted = sort(to_remove, by=weight)
+    edge_sorted = sort(to_remove, by=poids)
     
     # Add the root and 2 cheapest arcs from the root to a leaf
     # Keep the component components updated
@@ -69,8 +71,8 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
         e = pop!(edge_sorted)    
         add_edge!(tree_structure, e)
         # If any of the 2 extremities is root, its degree won't be updated because it won't be part of the dictionary yet
-        node_degrees[ends(e)[1]] += 1
-        node_degrees[ends(e)[2]] += 1
+        node_degrees[debut(e)] += 1
+        node_degrees[fin(e)] += 1
     end
     node_degrees[root] = 2
     return tree_structure, component
@@ -87,11 +89,9 @@ function compute_weight(graph::Graph{T, Z}, tour::Graph{T, Z}, pi::Vector{Float6
 
     # Iterate over edges in the tour
     for edge in edges(tour)
-        # Extract nodes of the edge
-        node1, node2 = ends(edge)
 
         # Update total weight with edge weight and Lagrangian multipliers (pi)
-        total_weight += weight(edge) + pi[node_index(graph, node1)] + pi[node_index(graph, node2)]
+        total_weight += poids(edge) + pi[node_index(graph, node1(edge))] + pi[node_index(graph, node2(edge))]
     end
 
     # Compute the weight of the tour using the 1-tree and pi vector
@@ -102,17 +102,15 @@ end
 
 
 
-function update_degrees(graph::Graph{T, Z}, components, root::Node{T}, pi::Vector{Float64}) where {T, Z}
+function update_degrees(graph::Graph{Node{T}, Z}, component, root::Node{T}, pi::Vector{Float64}) where {T, Z}
     # Initialize degrees for all nodes
     node_degrees = zeros(Int64, nb_nodes(graph))
 
     # Update degrees based on the 1-tree
-    for component in components
-        for edge in edges(component)
-            # Increment degrees of the nodes in the 1-tree
-            node_degrees[node_index(graph, ends(edge)[1])] += 1
-            node_degrees[node_index(graph, ends(edge)[2])] += 1
-        end
+    for edge in edges(component)
+        # Increment degrees of the nodes in the 1-tree
+        node_degrees[node_index(graph, node1(edge))] += 1
+        node_degrees[node_index(graph, node2(edge))] += 1
     end
 
     # If the root is not present in the 1-tree, add it with a degree of 2
@@ -147,10 +145,9 @@ function transform_matrix(graph::Graph{T, Z}, pi::Vector) where {T, Z}
 
     # Loop over alle randen in de grafiek
     for edge in edges(transformed_graph)
-        node1, node2 = ends(edge)
-
+        
         # Bereken de nieuwe gewichten op basis van de Lagrangiaanse multiplicatoren
-        new_weight = weight(edge) + pi[node_index(graph, node1)] + pi[node_index(graph, node2)]
+        new_weight = poids(edge) + pi[node_index(graph, node1(edge))] + pi[node_index(graph, node2(edge))]
 
         # Werk de gewichten van de randen bij
         set_weight!(transformed_graph, edge, new_weight)

@@ -39,6 +39,7 @@ node2(edge::AbstractEdgeOriented) = fin(edge)
 ==(e1::AbstractEdgeOriented, e2::AbstractEdgeOriented) = (debut(e1) == debut(e2)) && (fin(e1) == fin(e2)) && (poids(e1) == poids(e2))
 
 Base.convert(::Type{T}, e::Edge) where {T<:EdgeOriented} = EdgeOriented(node1(e), node2(e), poids(e))
+Base.convert(::Type{T}, e::EdgeOriented) where {T<:Edge} = Edge(debut(e), fin(e), poids(e))
 
 """Affiche un edge."""
 function show(edge::AbstractEdgeOriented)
