@@ -42,7 +42,7 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
     # Gets the MST tree and its corresponding connex component c for the subgraph graph[V\{root}]
     temp_graph = Graph("", nodes_base, edges_base)
     component = kruskal(temp_graph)
-    #println(component)
+    println("edges kruskal  ",length(component.edges))
     #length(component.nodes) != 1 && error("kruskal has more than 1 component")
 
     #kruskal only gives the composante_connexe back and we also want a tree to be given back
@@ -75,6 +75,7 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
         node_degrees[fin(e)] += 1
     end
     node_degrees[root] = 2
+    #println(tree_structure)
     return tree_structure, component
 end
 
@@ -105,6 +106,9 @@ end
 function update_degrees(graph::Graph{Node{T}, Z}, component, root::Node{T}, pi::Vector{Float64}) where {T, Z}
     # Initialize degrees for all nodes
     node_degrees = zeros(Int64, nb_nodes(graph))
+
+    # Define a function to get the index of a node in the graph
+    node_index(graph, node) = findfirst(x -> x == node, nodes(graph))
 
     # Update degrees based on the 1-tree
     for edge in edges(component)
@@ -146,11 +150,12 @@ function transform_matrix(graph::Graph{T, Z}, pi::Vector) where {T, Z}
     # Loop over alle randen in de grafiek
     for edge in edges(transformed_graph)
         
-        # Bereken de nieuwe gewichten op basis van de Lagrangiaanse multiplicatoren
+        # Calculate the new weights using the  Lagrangian multiplicators
         new_weight = poids(edge) + pi[node_index(graph, node1(edge))] + pi[node_index(graph, node2(edge))]
 
-        # Werk de gewichten van de randen bij
-        set_weight!(transformed_graph, edge, new_weight)
+        # adjust the weights of the edges
+        #set_weight!(transformed_graph, edge, new_weight)
+        set_weight!(edge, new_weight)
     end
 
     return transformed_graph
@@ -182,7 +187,7 @@ function held_karp(graph::Graph{Node{T}, Z}, root::Node{T}, max_iterations::Int,
 
         # Step 6: Stopping criterion
         elapsed_time = time() - starting_time
-        if stopping_criterion(v_k, max_iterations, max_time)
+        if stopping_criterion(v_k, max_iterations, elapsed_time)
             break
         end
 
@@ -196,6 +201,8 @@ function held_karp(graph::Graph{Node{T}, Z}, root::Node{T}, max_iterations::Int,
         k += 1
         # Step 7: Choose a step size, t^k
         t_k = 1/k  # Adjust the step size based on your needs
+        #println("2")
+        max_iterations -= 1
     end
 
     return W

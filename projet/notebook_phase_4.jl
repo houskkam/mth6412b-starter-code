@@ -4,9 +4,6 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 087373f5-e590-497d-b149-5829250ffe0f
-
-
 # ╔═╡ b4b81322-5632-11ee-39de-e3a0b20a4a8f
 md"""
 # Rapport Projet 4
@@ -403,10 +400,13 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
     edges_base = filter(x -> !(x in to_remove), edges(graph))
     
     # Gets the MST tree and its corresponding connex component c for the subgraph graph[V\{root}]
-    component = kruskal(Graph("", nodes_base, edges_base))
-    length(component) != 1 && error("kruskal has more than 1 component")
+    temp_graph = Graph("", nodes_base, edges_base)
+    component = kruskal(temp_graph)
+    #println(component)
+    #length(component.nodes) != 1 && error("kruskal has more than 1 component")
+
     #kruskal only gives the composante_connexe back and we also want a tree to be given back
-    edges_tree = edges(component)
+    edges_tree = convert(Vector{Edge{Z, Node{T}}},edges(component))
 
     tree_structure = Graph("MST", nodes_base, edges_tree)
     
@@ -421,18 +421,18 @@ function min_one_tree(graph::Graph{Node{T}, Z}, root::Node{T}) where {T, Z}
     leaves = filter(kv -> kv.second == 1, node_degrees)
    
     # Order these edges by weight
-    edge_sorted = sort(to_remove, by=weight)
+    edge_sorted = sort(to_remove, by=poids)
     
     # Add the root and 2 cheapest arcs from the root to a leaf
     # Keep the component components updated
-    # We are updating the degrees
+    # We are keeping the degree dictionary updated
     add_node!(tree_structure, root)
     for i in 1:2
         e = pop!(edge_sorted)    
         add_edge!(tree_structure, e)
-        # If any of the 2 extremities is root, its degree won't be updated because it           won't be part of the dictionary yet
-        node_degrees[ends(e)[1]] += 1
-        node_degrees[ends(e)[2]] += 1
+        # If any of the 2 extremities is root, its degree won't be updated because it won't be part of the dictionary yet
+        node_degrees[debut(e)] += 1
+        node_degrees[fin(e)] += 1
     end
     node_degrees[root] = 2
     return tree_structure, component
@@ -608,7 +608,6 @@ held_karp(G,nodes(G)[j],60, 100.0)
 """
 
 # ╔═╡ Cell order:
-# ╠═087373f5-e590-497d-b149-5829250ffe0f
 # ╟─b4b81322-5632-11ee-39de-e3a0b20a4a8f
 # ╟─ca69731a-4b04-408c-b2cd-9ff44b90cc8b
 # ╟─d1426d43-4b3d-4e41-bed6-1460ee7631c5

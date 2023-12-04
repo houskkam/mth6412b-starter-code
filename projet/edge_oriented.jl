@@ -45,3 +45,8 @@ Base.convert(::Type{T}, e::EdgeOriented) where {T<:Edge} = Edge(debut(e), fin(e)
 function show(edge::AbstractEdgeOriented)
   println("Parent node ", debut(edge), "child node: ", fin(edge) ,", weight: ", poids(edge))
 end
+
+function set_weight!(edge::EdgeOriented{Z, T}, new_weight::Z) where {T, Z}
+  edge.poids = new_weight
+  return edge
+end

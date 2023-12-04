@@ -11,5 +11,5 @@ G = get_graph_from_file(pwd() * "\\instances\\stsp\\bayg29.tsp")
 (lowest_sum, lowest_i) = (10000, 10000)
 
 
-sum = held_karp(G,nodes(G)[1],60, 100.0)
+sum = held_karp(G,nodes(G)[1],1000, 100.0)
 print(sum)

@@ -40,3 +40,8 @@ Base.isless(x::AbstractEdge, y::AbstractEdge) = poids(x) < poids(y)
 function show(edge::Edge)
   println("First node ", node1(edge), "second node: ", node2(edge) ,", poids: ", poids(edge))
 end
+
+function set_weight!(edge::Edge{Z, T}, new_weight::Z) where {T, Z}
+  edge.poids = new_weight
+  return edge
+end

@@ -5,9 +5,8 @@ include("graph.jl")
 include("edge_oriented.jl")
 include("composante_connexe.jl")
 include("arbre_de_recouvrement.jl")
-include("read_graph.jl")
-include("read_stsp.jl")
-#include("prim.jl")
+include("prim.jl")
+include("hk_algorithm.jl")
 
 # Initializing nodes from example from laboratories
 noeud1 = Node("a", "a")
@@ -41,27 +40,20 @@ lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noe
 lab_edges = [edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9, edge10, edge11, edge12, edge13, edge14]
 G = Graph("Lab", lab_nodes, lab_edges)
 
-# Initializing expected kruskal connected component
-kruskal_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
-kruskal_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, kruskal_expected_edges)
-expected_connected_component_kruskal = ComposanteConnexe(noeud1, lab_nodes, kruskal_expected_edges)
+println(held_karp(G,lab_nodes[5],200,70.0))
 
+#Initializing expected prim connected components 
+#prim_expected_edges = [edge1, edge2, edge6, edge8, edge9, edge10, edge11, edge13]
+#prim_expected_edges = convert(Array{EdgeOriented{Float64, Node{String}}}, prim_expected_edges)
+#expected_connected_component_prim = ComposanteConnexe(noeud1, lab_nodes, prim_expected_edges)
 
-# Testing kruskal connected component
-#kruskal_component = kruskal(G)
-#print("volledig")
-#print(kruskal_component)
+#result= prim_alg(G,noeud1)
+#println(result)
+
+#testing_components_equal(result, expected_connected_component_prim)
 #print("\n")
-#print(expected_connected_component_kruskal)
+#print(expected_connected_component_prim)
 
-#testing_components_equal(kruskal_component, expected_connected_component_kruskal)
-#@test kruskal(G) == expected_connected_component_kruskal
-
-
-Gtwo = get_graph_from_file(pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\nikos-cat.tsp")
-(lowest_sum, lowest_i) = (10000, 10000)
-
-
-println(kruskal(Gtwo))
-
-
+#Testing prim 
+#@test prim_alg(G,noeud1) == expected_connected_component_prim
+#println(result)
