@@ -8,6 +8,7 @@ using InteractiveUtils
 md"""
 # Rapport Projet 5
 ## MTH6412B
+In this phase the earlier written code will be used to remake shredded photos. 
 """
 
 # ╔═╡ 630f16ad-1f55-42df-a771-e1f5e90b2898
