@@ -1,4 +1,58 @@
 using Plots
+include("graph.jl")
+
+
+"""" Lis le fichier tsp et en extrait les données
+    - Construit l'objet Graph 
+    - Construit les objets Nodes (explicites ou implicites)
+    - Construit les objets Edges
+    
+    Retourne le graph associé au fichier donné en argument.
+    Si le graphe décrit est representable (ie. les noeuds ont une donnée coordonnées spécifiée), l'image est sauvegardée
+Pour lancer le programme:
+    Se placer dans le dossier projet/phase1
+    lancer julia main.jl "Nom de l'instance".tsp 
+    exemple:
+        julia main.jl gr17.tsp
+"""
+function build_graph(filename::String)
+  # graph_nodes, graph_edges, edges_brut, weights = read_stsp("filename")
+
+  graph_nodes, graph_edges, edges_brut, weights = read_stsp(filename)
+  header = read_header(filename)
+ 
+  graph_name = split( last(split(filename, "/")), ".")[1]
+  ### Construire les nodes
+  if header["DISPLAY_DATA_TYPE"] == "TWOD_DISPLAY" || header["DISPLAY_DATA_TYPE"] == "COORD_DISPLAY"
+      g = Graph{Vector{Float64}}(graph_name, Vector{Node{Float64}}(), Vector{Edge{Float64, Node{Float64}}}())
+      for n in keys(graph_nodes)
+          add_node!(g, Node("$(n)", graph_nodes[n]))
+      end
+  else
+      g = Graph{Nothing}(graph_name, Vector{Node}(), Vector{Edge}())
+      for i in 1:parse(Int, header["DIMENSION"])
+          add_node!(g, Node("$(i)", nothing))
+      end
+  end
+
+  ### Construire les edges 
+  g_nodes = nodes(g)
+  for i in eachindex(edges_brut)
+      #Si le format des donnees est tel que les aretes i-i sont explicitées (edge_weight_format) et le poid d'une telle arete est nul, et c'est bien une arete i-i, alors on ne cré pas l'arete. 
+      #Autrement elle est créée et ajoutée au graphe.
+      if header["EDGE_WEIGHT_FORMAT"] in ["FULL_MATRIX", "UPPER_DIAG_ROW", "LOWER_DIAG_ROW"] && weights[i]==0 && edges_brut[i][1] == edges_brut[i][2] 
+      else
+          # Fonction get_node renvoie l'objet Node dans g en fonction de son nom
+          u = get_node(g, "$(edges_brut[i][1])")
+          v = get_node(g, "$(edges_brut[i][2])")
+          edge = Edge{typeof(data(u))}((u,v),weights[i])
+          add_edge!(g, edge)
+      end
+
+  end
+  
+  return g
+end
 
 """Analyse un fichier .tsp et renvoie un dictionnaire avec les données de l'entête."""
 function read_header(filename::String)
@@ -12,7 +66,6 @@ function read_header(filename::String)
   for section in sections
     header[section] = "None"
   end
-  
 
   for line in eachline(file)
     line = strip(line)
@@ -39,6 +92,10 @@ function read_nodes(header::Dict{String}{String}, filename::String)
 
 
   if !(node_coord_type in ["TWOD_COORDS", "THREED_COORDS"]) && !(display_data_type in ["COORDS_DISPLAY", "TWOD_DISPLAY"])
+    # creating empty nodes, they will get values of the key in read_graph_function as name and data
+    for k = 1 : parse(Int, header["DIMENSION"])
+      nodes[k]=Vector{Float64}[]
+    end
     return nodes
   end
 
@@ -91,14 +148,15 @@ function n_nodes_to_read(format::String, n::Int, dim::Int)
   end
 end
 
-"""Analyse un fichier .tsp et renvoie l'ensemble des arêtes sous la forme d'un tableau."""
+"""Analyse un fichier .tsp et renvoie l'ensemble des arêtes sous la forme d'un tableau et leurs poids respectifs sous la forme d'un tableau."""
 function read_edges(header::Dict{String}{String}, filename::String)
 
   edges = []
+  weights = []
   edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
   known_edge_weight_formats = ["FULL_MATRIX", "UPPER_ROW", "LOWER_ROW",
   "UPPER_DIAG_ROW", "LOWER_DIAG_ROW", "UPPER_COL", "LOWER_COL",
-  "UPPER_DIAG_COL", "LOWER_DIAG_COL"] 
+  "UPPER_DIAG_COL", "LOWER_DIAG_COL"]
 
   if !(edge_weight_format in known_edge_weight_formats)
     @warn "unknown edge weight format" edge_weight_format
@@ -116,7 +174,6 @@ function read_edges(header::Dict{String}{String}, filename::String)
 
   for line in eachline(file)
     line = strip(line)
-    #println(line)
     if !flag
       if occursin(r"^EDGE_WEIGHT_SECTION", line)
         edge_weight_section = true
@@ -127,58 +184,48 @@ function read_edges(header::Dict{String}{String}, filename::String)
         data = split(line)
         n_data = length(data)
         start = 0
-
-        while n_data > 0 #
-          #println(data)
+        while n_data > 0
           n_on_this_line = min(n_to_read, n_data)
-
+    
           for j = start : start + n_on_this_line - 1
-            n_edges = n_edges + 1 #amount of edges constructed until now
-
+            n_edges = n_edges + 1
             if edge_weight_format in ["UPPER_ROW", "LOWER_COL"]
-              weight= parse(Float64, data[j+1])
-              edge = (k+1, i+k+2, weight)
+              edge = (k+1, i+k+2, parse(Float64, data[j+1]))
             elseif edge_weight_format in ["UPPER_DIAG_ROW", "LOWER_DIAG_COL"]
-              weight= parse(Float64, data[j+1])
-              edge = (k+1, i+k+1,weight)
+              edge = (k+1, i+k+1, parse(Float64, data[j+1]))
             elseif edge_weight_format in ["UPPER_COL", "LOWER_ROW"]
-              weight= parse(Float64, data[j+1])
-              edge = (i+k+2, k+1, weight)
+              edge = (i+k+2, k+1, parse(Float64, data[j+1]))
             elseif edge_weight_format in ["UPPER_DIAG_COL", "LOWER_DIAG_ROW"]
-              weight= parse(Float64, data[j+1])
-              edge = (i+1, k+1, weight)
+              edge = (i+1, k+1, parse(Float64, data[j+1]))
             elseif edge_weight_format == "FULL_MATRIX"
-              weight= parse(Float64, data[j+1])
-              edge = (k+1, i+1, weight)
+              edge = (k+1, i+1, parse(Float64, data[j+1]))
             else
               warn("Unknown format - function read_edges")
             end
-
-            push!(edges, edge)           
-
+            push!(edges, edge)
             i += 1
           end
-
+    
           n_to_read -= n_on_this_line
           n_data -= n_on_this_line
-
+    
           if n_to_read <= 0
             start += n_on_this_line
             k += 1
             i = 0
             n_to_read = n_nodes_to_read(edge_weight_format, k, dim)
           end
-
+    
           if k >= dim
             n_data = 0
             flag = true
           end
         end
       end
-    end
+    end    
   end
   close(file)
-  return edges
+  return edges, weights
 end
 
 """Renvoie les noeuds et les arêtes du graphe."""
@@ -191,16 +238,21 @@ function read_stsp(filename::String)
 
   Base.print("Reading of nodes : ")
   graph_nodes = read_nodes(header, filename)
+  #@show "nodes in func"
+  #@show graph_nodes
   println("✓")
 
   Base.print("Reading of edges : ")
-  edges_brut = read_edges(header, filename)
+  ## Recupére les poids et la liste des edges
+  edges_brut, weights = read_edges(header, filename)
+  
   graph_edges = []
   for k = 1 : dim
     edge_list = Int[]
     push!(graph_edges, edge_list)
   end
 
+  
   for edge in edges_brut
     if edge_weight_format in ["UPPER_ROW", "LOWER_COL", "UPPER_DIAG_ROW", "LOWER_DIAG_COL"]
       push!(graph_edges[edge[1]], edge[2])
@@ -213,7 +265,9 @@ function read_stsp(filename::String)
     graph_edges[k] = sort(graph_edges[k])
   end
   println("✓")
-  return graph_nodes, graph_edges
+  
+  ## Retourne la liste des noeuds, les listes d'adjacence, la liste des aretes et leurs poids
+  return graph_nodes, graph_edges, edges_brut, weights
 end
 
 """Affiche un graphe étant données un ensemble de noeuds et d'arêtes.
@@ -246,6 +300,6 @@ end
 
 """Fonction de commodité qui lit un fichier stsp et trace le graphe."""
 function plot_graph(filename::String)
-  graph_nodes, graph_edges = read_stsp(filename)
+  graph_nodes, graph_edges = read_stsp("instances/stsp/$(filename)")
   plot_graph(graph_nodes, graph_edges)
 end
