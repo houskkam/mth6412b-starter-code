@@ -6,7 +6,7 @@ G = get_graph_from_file(pwd() * "\\instances\\stsp\\bayg29.tsp")
 for i in 1:length(nodes(G))
     start_point = nodes(G)[i]
 
-    (my_edges, elapsed_time, elapsed_time_no_test) = lewis(G, start_point, false)
+    (my_nodes, my_edges, elapsed_time, elapsed_time_no_test) = lewis(G, start_point, false)
     @test length(my_edges) == length(nodes(G))
     sum = 0
     last_n1 = node1(my_edges[1])
@@ -29,6 +29,6 @@ for i in 1:length(nodes(G))
 end
 
 best_start_point_kruskal = nodes(G)[lowest_i]
-(my_edges, elapsed_time, elapsed_time_no_test) = lewis(G, best_start_point_kruskal, true)
+(my_nodes, my_edges, elapsed_time, elapsed_time_no_test) = lewis(G, best_start_point_kruskal, true)
 print("lowest sum: ", lowest_sum, " for ", lowest_i, "th starting node and times ", elapsed_time, " with a test and ", elapsed_time_no_test, " without\n")
 print(my_edges)

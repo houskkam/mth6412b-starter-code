@@ -110,6 +110,6 @@ function lewis(graph::Graph{Node{T}, Z}, start_point::Node{T}, using_kruskail::B
     tour_edges = []
     tour_edges = get_edges(graph, my_nodes)
     elapsed_time = time() - starting_time
-    return (tour_edges, elapsed_time, time() - starting_time_no_test)
+    return (my_nodes, tour_edges, elapsed_time, time() - starting_time_no_test)
 end
 
