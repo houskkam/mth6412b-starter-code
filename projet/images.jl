@@ -71,6 +71,96 @@ function write_tour(filename::String, tour_weight::Number, nodes::Vector{Node{T}
     write(file, inside_string)
 end
 
+"""
+Reconstructs an image based on a tour file and an input picture.
+returns a reconstructed picture based on the tour information.
+"""
+function reconstruct_picture(tour_filename::String, input_picture::AbstractArray)
+    # Read the tour data from the specified file
+    tour_data = read_tour(tour_filename)
+    # Extract the tour nodes from the tour data
+    tour_nodes = tour_data["TOUR_SECTION"]
+    # Get the number of columns in the input picture
+    nb_col = size(input_picture, 2)
+
+    # Initialize the reconstructed picture with zeros
+    reconstructed_picture = zeros(size(input_picture))
+
+    # Iterate through the tour nodes to reconstruct the image
+    for i in 1:length(tour_nodes)-1
+        # Get the indices of the current and next nodes
+        node1_idx = parse(Int, tour_nodes[i])
+        node2_idx = parse(Int, tour_nodes[i+1])
+
+        # Reconstructing the image based on the tour
+        # Copy the column from the next node to the current node in the reconstructed picture
+        reconstructed_picture[:, node1_idx] = input_picture[:, node2_idx]
+    end
+
+    # Complete the cycle by connecting the last and first nodes
+    last_node_idx = parse(Int, tour_nodes[end])
+    first_node_idx = parse(Int, tour_nodes[1])
+    # Copy the column from the first node to the last node in the reconstructed picture
+    reconstructed_picture[:, last_node_idx] = input_picture[:, first_node_idx]
+
+    return reconstructed_picture
+end
+
+
+"""
+Reads the tour nodes from a .tour file and returns them as an array of Node objects.
+It returns an array of Node objects representing the tour nodes.
+"""
+function read_tour(tour_filename::String, graph::Graph{T, Z}) where {T, Z}
+    # Initialize an array to store tour nodes
+    tour_nodes = Vector{Node{T}}()
+
+    # Open the .tour file for reading
+    file = open(tour_filename, "r")
+
+    # Skip header information until TOUR_SECTION is reached
+    while true
+        line = readline(file)
+        if occursin(r"^TOUR_SECTION", line)
+            break
+        end
+    end
+
+    # Read the nodes in the tour until EOF is reached
+    while true
+        line = readline(file)
+        if occursin(r"^EOF", line)
+            break
+        end
+        # Parse the node index from the line and find the corresponding Node index in the graph
+        node_index = findfirst(x -> x == parse(Int, line), nodes(graph))
+        if isnothing(node_index)
+            error("Node not found in the graph.")
+        end
+        # Retrieve the corresponding Node from the graph
+        push!(tour_nodes, nodes(graph)[node_index])
+    end
+
+    # Close the file
+    close(file)
+
+    return tour_nodes
+end
+
+
+
+using Plots
+
+function generate_picture(original_picture::AbstractArray, reconstructed_picture::AbstractArray)
+    plot(
+        heatmap(original_picture, color=:grays, title="Original Picture"),
+        heatmap(reconstructed_picture, color=:grays, title="Reconstructed Picture"),
+        layout=(1,2),
+        size=(800, 400)
+    )
+end
+
+
 fn = pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
 
 
