@@ -99,11 +99,11 @@ want to create the cycle. It creates a file input\_name.tour containing informat
 ```
 """
 
-# ╔═╡ f6bbd625-f650-4f3a-beda-f471cefe7ed5
-md"""
-## The reconstruction of the images
-In this part of the code the goal is to reconstruct the  shredded picture. This reconstruction is done after a tour is found using the previous functions. 
 
+# ╔═╡ a74145e2-09ee-444d-bc79-88a0c00025ae
+md"""
+## Reconstructing the image
+In the next pert of the project the picture has to be recontructed using the cycle that was previously calculated. By reading the file this will give us a correct order to place the shredded pieces of the image.
 ```julia
 function reconstruct_picture(tour_filename::String, input_picture::AbstractArray)
     # Read the tour data from the specified file
@@ -135,14 +135,14 @@ function reconstruct_picture(tour_filename::String, input_picture::AbstractArray
 
     return reconstructed_picture
 end
+
 ```
 """
 
-# ╔═╡ 7e9b0da1-ec1d-4973-92f5-c15f9b5644a3
+# ╔═╡ a1e4427a-b2ad-40df-b012-038e70178a33
 md"""
-This function reads the tour nodes from a .tour file and returns them as an array of Node objects. It returns an array of Node objects representing the tour nodes.
-
-```julia 
+The optimal tour was saved in a file. This function reads the tour nodes from a .tour file and returns them as an array of Node objects. It returns an array of Node objects representing the tour nodes and is called upon in the recontruction of the picture.
+```julia
 function read_tour(tour_filename::String, graph::Graph{T, Z}) where {T, Z}
     # Initialize an array to store tour nodes
     tour_nodes = Vector{Node{T}}()
@@ -178,15 +178,13 @@ function read_tour(tour_filename::String, graph::Graph{T, Z}) where {T, Z}
 
     return tour_nodes
 end
-
 ```
 """
 
-# ╔═╡ fd996a87-b276-480a-a428-c0f9d3bf0c09
+# ╔═╡ a056bf10-8240-43a4-b762-efa0d34c81f6
 md"""
-## Compare the images 
-In this part the reconstructed and original pricture are placed next to eachother, to evaluate how well the reconstruction went. A fuction generate_picture() is made to depict these images. Now it can be tested on multiple pictures when calling up the function.
-
+## Testing
+Now that the code is written, the next step is to test the created images. We have to compare them to the original pictures.
 ```julia
 function generate_picture(original_picture::AbstractArray, reconstructed_picture::AbstractArray)
     plot(
@@ -199,20 +197,12 @@ end
 ```
 """
 
-# ╔═╡ 12b09f82-7096-4ea7-8711-b1e167352c21
-md"""
-This can now be tested on the following examples:
-WE STILL NEED TO FILL THIS IN!!!
-
-"""
-
 # ╔═╡ Cell order:
-# ╟─75572c3f-0fea-4b7a-aa67-6d97661f5da6
-# ╟─630f16ad-1f55-42df-a771-e1f5e90b2898
-# ╟─1d83b40c-f15a-445f-9760-d5eb94bd9638
-# ╟─f598ae3c-4d44-4a8f-be60-e5df1169d87e
-# ╟─a7fd766e-3dc2-4252-88b6-579375ae9b6b
-# ╟─f6bbd625-f650-4f3a-beda-f471cefe7ed5
-# ╟─7e9b0da1-ec1d-4973-92f5-c15f9b5644a3
-# ╟─fd996a87-b276-480a-a428-c0f9d3bf0c09
-# ╟─12b09f82-7096-4ea7-8711-b1e167352c21
+# ╠═75572c3f-0fea-4b7a-aa67-6d97661f5da6
+# ╠═630f16ad-1f55-42df-a771-e1f5e90b2898
+# ╠═1d83b40c-f15a-445f-9760-d5eb94bd9638
+# ╠═f598ae3c-4d44-4a8f-be60-e5df1169d87e
+# ╠═a7fd766e-3dc2-4252-88b6-579375ae9b6b
+# ╟─a74145e2-09ee-444d-bc79-88a0c00025ae
+# ╟─a1e4427a-b2ad-40df-b012-038e70178a33
+# ╟─a056bf10-8240-43a4-b762-efa0d34c81f6
