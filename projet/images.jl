@@ -37,6 +37,18 @@ information about the difference of the cycle."""
 function get_cycle(input_name::String)
     #print("in function")
     g_create = get_graph_from_file(input_name)
+    # Filtering out the node 0 that has 0 lenght edges with all other nodes
+
+    node_to_be_deleted = g_create.nodes[1]
+    # Creates a vector of all graph's node except the root
+    g_create.nodes = filter(x -> x != node_to_be_deleted, g_create.nodes)
+
+    # Creates a vector of all graphs edges except the edges adjacent to the root
+    to_remove = get_oriented_edges(g_create, node_to_be_deleted)
+    g_create.edges = filter(x -> !(x in to_remove), g_create.edges)
+
+    #fitlered = filter(x -> x != g_create.nodes[1], g_create.nodes)
+    #nodes(g_create) = fitlered
     #print("graph done")
     (cycle, my_edges, elapsed_time, elapsed_time_no_test) = lewis(g_create, nodes(g_create)[1], true)
     #print("cycle done")
@@ -45,7 +57,7 @@ function get_cycle(input_name::String)
     tour_filename = write_tour(input_name, tour_weight, cycle)
     print("cycle written")
     #cycle_difference = get_difference("$(input_name).tour")
-    return tour_filename
+    return tour_filename, cycle
     #return cycle_difference
 end
 
@@ -81,11 +93,10 @@ end
 Reconstructs an image based on a tour file and an input picture.
 returns a reconstructed picture based on the tour information.
 """
-function reconstruct_picture(tour_filename::String, input_picture::AbstractArray)
-    # Read the tour data from the specified file
-    tour_data = read_tour(tour_filename)
-    # Extract the tour nodes from the tour data
-    tour_nodes = tour_data["TOUR_SECTION"]
+function reconstruct_picture(filename::String, input_picture::AbstractArray)
+    # Create .tour file and get cycle nodes
+    tour_filename, cycle_nodes = get_cycle(filename)
+    
     # Get the number of columns in the input picture
     nb_col = size(input_picture, 2)
 
@@ -172,4 +183,4 @@ fn = pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
 
 #write_tour("hahahh", 5, lab_nodes)
 tour_filename = get_cycle(fn)
-reconstruct_picture(tour_filename, )
+#reconstruct_picture(fn)
