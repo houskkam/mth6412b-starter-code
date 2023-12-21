@@ -53,10 +53,10 @@ end
 # by using `pwd()` and `cd ..` commands before executing next line.
 # You can also change the file you are reading data from.
 
-fn = pwd() * "\\instances\\stsp\\bayg29.tsp"
+#fn = pwd() * "\\instances\\stsp\\bayg29.tsp"
 #fn = pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
-g = get_graph_from_file(fn)
-println(g)
+#g = get_graph_from_file(fn)
+#println(g)
 
 
 

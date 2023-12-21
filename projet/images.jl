@@ -35,17 +35,17 @@ end
 want to create the cycle. It creates a file input_name.tour containing information about the cycle and returns
 information about the difference of the cycle."""
 function get_cycle(input_name::String)
-    print("in function")
+    #print("in function")
     g_create = get_graph_from_file(input_name)
-    print("graph done")
+    #print("graph done")
     (cycle, my_edges, elapsed_time, elapsed_time_no_test) = lewis(g_create, nodes(g_create)[1], true)
-    print("cycle done")
+    #print("cycle done")
     tour_weight = sum_weight_of_edges(my_edges)
-    print("writing cycle now", tour_weight)
-    write_tour(input_name, tour_weight, cycle)
+    #print("writing cycle now", tour_weight)
+    tour_filename = write_tour(input_name, tour_weight, cycle)
     print("cycle written")
     #cycle_difference = get_difference("$(input_name).tour")
-
+    return tour_filename
     #return cycle_difference
 end
 
@@ -74,7 +74,7 @@ function write_tour(filename::String, tour_weight::Number, nodes::Vector{Node{T}
 
     # creating file named : filename.tour and writing the inside of inside_string to it
     write(file, inside_string)
-    print("$(filename)-our_tour.tour")
+    return file
 end
 
 """
@@ -170,16 +170,6 @@ end
 fn = pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
 
 
-noeud1 = Node("a", "a")
-noeud2 = Node("b", "b")
-noeud3 = Node("c", "c")
-noeud4 = Node("d", "d")
-noeud5 = Node("e", "e")
-noeud6 = Node("f", "f")
-noeud7 = Node("g", "g")
-noeud8 = Node("h", "h")
-noeud9 = Node("i", "i")
-lab_nodes = [noeud1, noeud2, noeud3, noeud4, noeud5, noeud6, noeud7, noeud8, noeud9]
-
 #write_tour("hahahh", 5, lab_nodes)
-get_cycle(fn)
+tour_filename = get_cycle(fn)
+reconstruct_picture(tour_filename, )
