@@ -32,7 +32,15 @@ function get_graph_from_file(fn::String)
 
     # Constructing my_edges of type Edge from the given file 
     my_edges = Vector{Edge{Float64, typeof(my_nodes[1])}}()
+    #has_deleted_first_one = false
+    # Creates a vector of all graphs edges except the edges adjacent to the root
+    #edges_base = filter(x -> !(x in to_remove), edges(graph))
     for almost_edge in edges_brut
+        #if !has_deleted_first_one
+        #    has_deleted_first_one = true
+        #    print(almost_edge, "\n almost edge")
+        #    break
+        #end
         idx_first_node = findfirst(isequal(almost_edge[1]), node_keys)
         idx_second_node = findfirst(isequal(almost_edge[2]), node_keys)
         if(isnothing(idx_first_node))
