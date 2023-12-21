@@ -94,9 +94,9 @@ function lewis(graph::Graph{Node{T}, Z}, start_point::Node{T}, using_kruskail::B
     starting_time = time()
 
     # make sure the triangle inequality holds
-    if !has_triang_inequality(graph)
-        return false
-    end
+    #if !has_triang_inequality(graph)
+    #    return false
+    #end
     starting_time_no_test = time()
     
     if using_kruskail
