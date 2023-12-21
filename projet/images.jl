@@ -17,7 +17,7 @@ function get_difference(input_name::String)
 end
 
 """Function sum_weight_of_edges gets a vector of edges and returns the sum of weights of all the edges"""
-function sum_weight_of_edges(my_edges::Vector{Edge{Z, T}}) where {Z, T}
+function sum_weight_of_edges(my_edges::Vector{AbstractEdge{Z, T}}) where {Z, T}
     sum = 0
     last_n1 = node1(my_edges[1])
     last_n2 = node2(my_edges[1])
@@ -28,17 +28,22 @@ function sum_weight_of_edges(my_edges::Vector{Edge{Z, T}}) where {Z, T}
         last_n1 = node1(e)
         last_n2 = node2(e)
     end
+    return sum
 end
 
 """Function get_cycle gets argument input_name, which specifies the name of picture for which we 
 want to create the cycle. It creates a file input_name.tour containing information about the cycle and returns
 information about the difference of the cycle."""
 function get_cycle(input_name::String)
+    print("in function")
     g_create = get_graph_from_file(input_name)
+    print("graph done")
     (cycle, my_edges, elapsed_time, elapsed_time_no_test) = lewis(g_create, nodes(g_create)[1], true)
+    print("cycle done")
     tour_weight = sum_weight_of_edges(my_edges)
+    print("writing cycle now", tour_weight)
     write_tour(input_name, tour_weight, cycle)
-
+    print("cycle written")
     #cycle_difference = get_difference("$(input_name).tour")
 
     #return cycle_difference
@@ -56,9 +61,9 @@ function write_tour(filename::String, tour_weight::Number, nodes::Vector{Node{T}
         nodes_str = nodes_str * name(node) * "\n"
     end
     nodes_str = chop(nodes_str)
-    file = "$(filename).tour"
+    file = "$(filename)-our_tour.tour"
 
-    inside_string = "NAME : $(filename).tour\n\
+    inside_string = "NAME : $(filename)-our_tour.tour\n\
     COMMENT : Length = $(tour_weight)\n\
     COMMENT : Found by LKH [Keld Helsgaun], $(time_now)\n\
     TYPE : TOUR\n\
@@ -69,6 +74,7 @@ function write_tour(filename::String, tour_weight::Number, nodes::Vector{Node{T}
 
     # creating file named : filename.tour and writing the inside of inside_string to it
     write(file, inside_string)
+    print("$(filename)-our_tour.tour")
 end
 
 """
