@@ -9,13 +9,81 @@ md"""
 # Rapport Projet 5
 ## MTH6412B
 Githib branch: https://github.com/houskkam/mth6412b-starter-code/tree/phase5
-In this phase the earlier written code will be used to remake shredded photos. 
-### TODO: Pour chaque image reconstruite, donnez la longueur de la meilleure tournée trouvée, l’image originale ainsi que l’image reconstruite côte-à-côte.
+In this phase the earlier written code will be used to remake shredded photos.
 
+TODO: Pour chaque image reconstruite, donnez la longueur de la meilleure tournée trouvée, l’image originale ainsi que l’image reconstruite côte-à-côte.
+
+We encountered a problem during this last phase. We didn't realise the tools.jl file with the code was given so we constructed a write\_tour and reconstruct\_picture ourselves. When we got stuck at the reconstruct\_picture, because we thought we didn't have enough information on how to write it a student reminded us the tools file was given. Sadly this was the day of the deadline. We did our best to write as much code as possible until the deadline.
+
+"""
+
+# ╔═╡ a64c5f62-f695-47bf-a854-a96f4cb36ff4
+md"""
+## Project 4
+This part of the project gives the code for shredding and reconstructing a picture. For every reconstructed picture it is tried to give the length of the optimal tour.
+
+The most important function we created in this phase is get\_cycle. It gets one argument input\_name, which specifies the name of picture for which we 
+want to create the cycle. It creates a file input\_name.tour containing information about the cycle and returns information about the difference of the cycle.
+```julia
+function get_cycle(input_name::String)
+    g_create = get_graph_from_file(input_name)
+    # Filtering out the node 0 that has 0 lenght edges with all other nodes
+
+    node_to_be_deleted = g_create.nodes[1]
+    # Creates a vector of all graph's node except the root
+    g_create.nodes = filter(x -> x != node_to_be_deleted, g_create.nodes)
+
+    # Creates a vector of all graphs edges except the edges adjacent to the root
+    to_remove = get_oriented_edges(g_create, node_to_be_deleted)
+    g_create.edges = filter(x -> !(x in to_remove), g_create.edges)
+
+    (cycle, my_edges, elapsed_time, elapsed_time_no_test) = lewis(g_create, nodes(g_create)[1], true)
+    tour_weight = sum_weight_of_edges(my_edges)
+    tour_filename = write_tour(input_name, tour_weight, cycle)
+    return tour_filename, cycle, tour_weight
+end
+
+```
+"""
+
+# ╔═╡ 91da7dd3-4bf6-4887-ba19-b86ac08f4554
+md"""
+This for-loop will give back the weight of the loops.
+
+```julia
+files_path = pwd() * "\\shredder\\shredder-julia\\tsp\\instances\\"
+
+files = ["abstract-light-painting.tsp", "alaska-railroad.tsp", "blue-hour-paris.tsp", "lower-kananaskis-lake.tsp", "marlet2-radio-board.tsp", "nikos-cat.tsp", "pizza-food-wallpaper.tsp", "the-enchanted-garden.tsp", "tokyo-skytree-aerial.tsp"]
+for file in files
+    name_of_file_now = filespath * file
+    , _, tour_weight = get_cycle(name_of_file_now)
+    println("The cycle we found for ", file, " has length equal to ", tour_weight)
+end
+
+```
+"""
+
+# ╔═╡ 0dc99503-35b4-4746-aea3-6fdeb6fe7157
+md"""
+In the next part a picture is shuffled so that it can be reconstructed again to test the reconstruct\_picture file. This way the original and reconstructed picture can be compared.
+
+```julia
+shuffle_picture(fn, fn_out)
+
+fn_tsp = pwd() * "\\projet\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
+old_fn_tsp = pwd() * "\\projet\\shredder\\shredder-julia\\tsp\\instances\\alaska-railroad.tsp"
+fn_out_reconstructed = pwd() * "\\projet\\output\\alaska-railroad-reconstructed.png"
+
+reconstruct_picture(fn_tsp, old_fn_tsp, fn_out_reconstructed)
+
+```
 """
 
 # ╔═╡ 630f16ad-1f55-42df-a771-e1f5e90b2898
 md"""
+## The first code we wrote
+As mentioned earlier we thought the exercise also consisted of creating the write\_tour and recontruct\_picture file. Luckily we noticed this and didn't finish our code, but because we weren't able to succeed with the other part we thought it would still be good to show the code we started on. 
+
 To implement this phase, we used many functions. One of them is called write\_tour. 
 Function write\_tour creates a file .tour that describes the minimal weight cycle that we put in through argument nodes.
 
@@ -90,28 +158,23 @@ end
 # ╔═╡ a7fd766e-3dc2-4252-88b6-579375ae9b6b
 md"""
 
-The most important function we created in this phase is get\_cycle. It gets one argument input\_name, which specifies the name of picture for which we 
-want to create the cycle. It creates a file input\_name.tour containing information about the cycle and returns information about the difference of the cycle.
+The get\_cycle function from our original strategy is reused in our last version. This can be seen at the top.
 
-```julia
-
-
-```
 """
 
 
 # ╔═╡ a74145e2-09ee-444d-bc79-88a0c00025ae
 md"""
-## Reconstructing the image
 In the next pert of the project the picture has to be recontructed using the cycle that was previously calculated. By reading the file this will give us a correct order to place the shredded pieces of the image.
 ```julia
 function reconstruct_picture(tour_filename::String, input_picture::AbstractArray)
-    # Read the tour data from the specified file
-    tour_data = read_tour(tour_filename)
-    # Extract the tour nodes from the tour data
-    tour_nodes = tour_data["TOUR_SECTION"]
+    ur_filename, cycle_nodes = get_cycle(filename)
+    
     # Get the number of columns in the input picture
     nb_col = size(input_picture, 2)
+
+    # Initialize the reconstructed picture with zeros
+    reconstructed_picture = zeros(size(input_picture))
 
     # Initialize the reconstructed picture with zeros
     reconstructed_picture = zeros(size(input_picture))
@@ -139,70 +202,13 @@ end
 ```
 """
 
-# ╔═╡ a1e4427a-b2ad-40df-b012-038e70178a33
-md"""
-The optimal tour was saved in a file. This function reads the tour nodes from a .tour file and returns them as an array of Node objects. It returns an array of Node objects representing the tour nodes and is called upon in the recontruction of the picture.
-```julia
-function read_tour(tour_filename::String, graph::Graph{T, Z}) where {T, Z}
-    # Initialize an array to store tour nodes
-    tour_nodes = Vector{Node{T}}()
-
-    # Open the .tour file for reading
-    file = open(tour_filename, "r")
-
-    # Skip header information until TOUR_SECTION is reached
-    while true
-        line = readline(file)
-        if occursin(r"^TOUR_SECTION", line)
-            break
-        end
-    end
-
-    # Read the nodes in the tour until EOF is reached
-    while true
-        line = readline(file)
-        if occursin(r"^EOF", line)
-            break
-        end
-        # Parse the node index from the line and find the corresponding Node index in the graph
-        node_index = findfirst(x -> x == parse(Int, line), nodes(graph))
-        if isnothing(node_index)
-            error("Node not found in the graph.")
-        end
-        # Retrieve the corresponding Node from the graph
-        push!(tour_nodes, nodes(graph)[node_index])
-    end
-
-    # Close the file
-    close(file)
-
-    return tour_nodes
-end
-```
-"""
-
-# ╔═╡ a056bf10-8240-43a4-b762-efa0d34c81f6
-md"""
-## Testing
-Now that the code is written, the next step is to test the created images. We have to compare them to the original pictures.
-```julia
-function generate_picture(original_picture::AbstractArray, reconstructed_picture::AbstractArray)
-    plot(
-        heatmap(original_picture, color=:grays, title="Original Picture"),
-        heatmap(reconstructed_picture, color=:grays, title="Reconstructed Picture"),
-        layout=(1,2),
-        size=(800, 400)
-    )
-end
-```
-"""
-
 # ╔═╡ Cell order:
 # ╠═75572c3f-0fea-4b7a-aa67-6d97661f5da6
-# ╠═630f16ad-1f55-42df-a771-e1f5e90b2898
-# ╠═1d83b40c-f15a-445f-9760-d5eb94bd9638
-# ╠═f598ae3c-4d44-4a8f-be60-e5df1169d87e
-# ╠═a7fd766e-3dc2-4252-88b6-579375ae9b6b
+# ╟─a64c5f62-f695-47bf-a854-a96f4cb36ff4
+# ╟─91da7dd3-4bf6-4887-ba19-b86ac08f4554
+# ╟─0dc99503-35b4-4746-aea3-6fdeb6fe7157
+# ╟─630f16ad-1f55-42df-a771-e1f5e90b2898
+# ╟─1d83b40c-f15a-445f-9760-d5eb94bd9638
+# ╟─f598ae3c-4d44-4a8f-be60-e5df1169d87e
+# ╟─a7fd766e-3dc2-4252-88b6-579375ae9b6b
 # ╟─a74145e2-09ee-444d-bc79-88a0c00025ae
-# ╟─a1e4427a-b2ad-40df-b012-038e70178a33
-# ╟─a056bf10-8240-43a4-b762-efa0d34c81f6
